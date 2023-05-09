@@ -398,6 +398,7 @@ def main():
     n_epochs = 2000 #1500
     train_batch_size = 60 # 40
     validation_batch_size = 60
+    n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
     datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/data.txt'  # data used for training (model input)
@@ -479,7 +480,7 @@ def main():
 
         n_training_epochs = 1
         #n_training_epochs = 1 if i < 10 else 10
-        if i % 2000 == 0 & i != 0:  #at which points to save images
+        if i % n_save_outputs == 0 & i != 0:  #at which points to save images
             save_outputs(model, validation_indices, dataset, imagedir, coorddir, folderdir, i, has_vis_marker, True)        # validation dataset
             # sollte erst am Ende passieren, da test dataset
             save_outputs(model, testimages_idx, test_dataset, testimagedir, coorddir, folderdir, i, has_vis_marker, False)  # test dataset

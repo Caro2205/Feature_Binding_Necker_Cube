@@ -202,13 +202,11 @@ class Cube:
         self.corners = np.hstack((new_coords, self.vis))
 
 
-def main():
+def main(data_filename = None, target_filename = None):
     target_cubes = []
     data_cubes = []
     center_0 = (0, 0, 0)
-    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False):
-        # generate cube with random rotation
-        # n_del_corners = 3  # number of (random) missing corners
+    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3):
         #noise_intens = []  # (Tim's BA:) noise >= 0.4 bad for model performance
         rotations = []
         lengths = []
@@ -218,9 +216,10 @@ def main():
 
         noise_seq = [noise] * n_cubes
 
-        for i in np.linspace(0.5, 3, n_cubes):
+        for i in np.linspace(side_len_lower, side_len_upper, n_cubes):
             lengths.append(i)
 
+        # change range of rotations here if needed
         for i in np.linspace(-180, 180, n_cubes):
             rotations.append(i)
 
@@ -252,19 +251,18 @@ def main():
             if del_z: cube.delete_all_z()
             data_cubes.append(cube)
 
+    ###### select what cubes to add to the dataset
+    # n_cubes standardmäßig 200
+    generate_cubes(side_len_lower=1, side_len_upper=1)
 
-    generate_cubes(0, 500, 0)
-    generate_cubes(0, 500, 0.1)
-    generate_cubes(1, 500, 0)
-    generate_cubes(1, 500, 0.1)
-    generate_cubes(2, 500, 0.1)
-    generate_cubes(2,500, 0)
-
-    # # create training data file
+    ### create training data file
     curr_time = time.strftime("%Y_%m_%d-%H_%M_%S")
 
     #filename = "data_" + curr_time + ".txt"
-    filename = "data.txt"
+    if data_filename is not None:
+        filename = data_filename
+    else:
+        filename = "data.txt"
 
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename
 
@@ -282,7 +280,10 @@ def main():
     file.close()
 
     #filename = "target_" + curr_time + ".txt"
-    filename = "target.txt"
+    if target_filename is not None:
+        filename = target_filename
+    else:
+        filename = "target.txt"
 
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename
 
