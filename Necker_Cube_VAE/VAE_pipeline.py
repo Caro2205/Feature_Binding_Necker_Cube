@@ -277,13 +277,13 @@ def create_folders(curr_time):
     foldername = "run_" + curr_time  # folder for this the model run
     folderdir = "C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/" + foldername + "/"  # this run in general run folder
     validation_imagedir = folderdir + "validation_images/"  # folder for this run's images
-    validation_coorddir = folderdir + "validation_coords/"
+    #validation_coorddir = folderdir + "validation_coords/"
     testimagedir = folderdir + "test_images/"
     os.makedirs(validation_imagedir)
-    os.mkdir(validation_coorddir)
+    #os.mkdir(validation_coorddir)
     os.mkdir(testimagedir)
 
-    return folderdir, validation_imagedir, validation_coorddir, testimagedir
+    return folderdir, validation_imagedir, testimagedir # testimagedir # validation_coorddir,
 
 
 def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, learning_rate, weight_decay, datapath,
@@ -302,7 +302,7 @@ def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, lea
         print("Reconstruction loss last epoch:", str(rec_losses_train[len(rec_losses_train) - 1]), file=file)
         print("\n", file=file)
         print("Size Testingdata:", (str(testdata_size)), file=file)
-        print("Test Reconstruction Loss:", str(rec_loss_test), file=file)
+        #print("Test Reconstruction Loss:", str(rec_loss_test), file=file)
     file.close()
 
 
@@ -340,8 +340,7 @@ def check_corners_close(corner_list):
 
 
 # saves reconstructions: images and coordinates (if save_coords=True)
-def save_outputs(model, indices, dataset, imagedir, coorddir, folderdir, epochs, has_vis_marker,
-                 save_coords):
+def save_outputs(model, indices, dataset, imagedir, folderdir, epochs, has_vis_marker): #, save_coords # coorddir,
     coords = []
     os.mkdir(imagedir + "epoch_" + str(epochs))
     indices_sorted = []
@@ -358,18 +357,18 @@ def save_outputs(model, indices, dataset, imagedir, coorddir, folderdir, epochs,
         save_images(cube, output, path, has_vis_marker, mode=None)
         coords.append(coordinate_reformer(output.detach().numpy()))
 
-    if save_coords:
-        save_coordinates(coorddir, epochs, indices_sorted, coords)
+    #if save_coords:
+    #    save_coordinates(coorddir, epochs, indices_sorted, coords)
 
 
-def save_coordinates(coorddir, epochs, indices_sorted, coords):
-    filename = coorddir + "/output_coord_epoch_" + str(epochs) + ".txt"
-    for i, test_index in enumerate(indices_sorted):
-        with open(filename, 'a') as f:
-            print("Cube_", str(test_index + 1), file=f)
-            print(coords[i], file=f)
-            print("\n", file=f)
-        f.close()
+#def save_coordinates(coorddir, epochs, indices_sorted, coords):
+#    filename = coorddir + "/output_coord_epoch_" + str(epochs) + ".txt"
+#    for i, test_index in enumerate(indices_sorted):
+#        with open(filename, 'a') as f:
+#            print("Cube_", str(test_index + 1), file=f)
+#            print(coords[i], file=f)
+#            print("\n", file=f)
+#        f.close()
 
 
 def seeding(seed):
@@ -396,20 +395,20 @@ def main():
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
     n_epochs = 2000 #1500
-    train_batch_size = 60 # 40
-    validation_batch_size = 60
+    train_batch_size = 40 # 40
+    validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
     datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/data.txt'  # data used for training (model input)
     targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/target.txt'  # can be None     # data used for training (desired model output)
 
-    test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/data.txt'  # data used to see how the model performs on that data after certain training epochs
-    test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/target.txt'  #'./training_data/testing_target.txt'
+    test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_data.txt'  # data used to see how the model performs on that data after certain training epochs
+    test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'
 
     # has_vis_marker indicates if the used data has a marker (1 or 0) to indicate whether a corner's
     # coordinate is visible or not visible (-> x, y, z = 0)
-    has_vis_marker = False  # False
+    has_vis_marker = True  # False
     input_size = 8 * 4 if has_vis_marker else 8 * 3
 
     # define model
@@ -453,7 +452,7 @@ def main():
 
     # create folders for model
     curr_time = time.strftime("%Y_%m_%d-%H_%M_%S")
-    folderdir, imagedir, coorddir, testimagedir = create_folders(curr_time)
+    folderdir, imagedir, testimagedir = create_folders(curr_time) #  coorddir,
 
     # run model and saves image reconstructions of validation images in every epoch in print_epoch
     outputs = []
@@ -480,10 +479,10 @@ def main():
 
         n_training_epochs = 1
         #n_training_epochs = 1 if i < 10 else 10
-        if i % n_save_outputs == 0 & i != 0:  #at which points to save images
-            save_outputs(model, validation_indices, dataset, imagedir, coorddir, folderdir, i, has_vis_marker, True)        # validation dataset
+        if i % 500 == 0 & i != 0:  #at which points to save images
+            save_outputs(model, validation_indices, dataset, imagedir, folderdir, i, has_vis_marker)   #, True  coorddir,    # validation dataset
             # sollte erst am Ende passieren, da test dataset
-            save_outputs(model, testimages_idx, test_dataset, testimagedir, coorddir, folderdir, i, has_vis_marker, False)  # test dataset
+            save_outputs(model, testimages_idx, test_dataset, testimagedir, folderdir, i, has_vis_marker) #, False  coorddir, # test dataset
 
         # model is trained for n_training_epochs epochs -> in total for n_epochs epochs
         outputs, epoch_losses, reconstruction_losses = train_model(model, train_loader, n_training_epochs, criterion, optimizer,
@@ -510,7 +509,7 @@ def main():
 
 
     # reloading the model parameters
-    #model = VAE.VariationalAutoencoder(input_size=input_size)
+    model = VAE.VariationalAutoencoder(input_size=input_size)
     model.load_state_dict(torch.load(model_name))
    # summary(model, input_size = (3, 64, 64), batch_size = -1)
     print("Model:")
@@ -522,7 +521,7 @@ def main():
 
     # save test reconstruction images and coordinates
     if test_datapath is not None:
-        save_outputs(model, testimages_idx, test_dataset, testimagedir, coorddir, folderdir, "final", has_vis_marker, False)  # test dataset
+        save_outputs(model, testimages_idx, test_dataset, testimagedir,  folderdir, "final", has_vis_marker)  # test dataset # coorddir, , False
         test_criterion = nn.MSELoss(reduction='none')
         test_losses, test_coords = test_model(model, test_loader, test_criterion)
 
@@ -531,20 +530,19 @@ def main():
             for i, loss in enumerate(test_losses):
                 print(i + 1, loss, file=f)
         f.close()
-        # save_loss_plot(test_losses, "Reconstruction RMSE of test data", 'Iterations', 'Loss',
-        #                folderdir + "test_losses", len(test_dataset))
+        #save_loss_plot(test_losses, "Reconstruction RMSE of test data", 'Iterations', 'Loss',
+        #               folderdir + "test_losses", len(test_dataset))
 
-        filename = folderdir + "/test_coords_final.txt"
-        with open(filename, "w") as f:
-            for i, loss in enumerate(test_coords):
-                print("Test Cube:", str(i + 1), loss, file=f)
-        f.close()
+        #filename = folderdir + "/test_coords_final.txt"
+        #with open(filename, "w") as f:
+        #    for i, loss in enumerate(test_coords):
+        #        print("Test Cube:", str(i + 1), loss, file=f)
+        #f.close()
 
     else:
         test_losses = None
 
-    save_outputs(model, validation_indices, dataset, imagedir, coorddir, folderdir, "final", has_vis_marker,
-                 True)  # validation dataset
+    save_outputs(model, validation_indices, dataset, imagedir, folderdir, "final", has_vis_marker)  # validation dataset # coorddir, True
 
     # save model information
     filename = folderdir + "/Hyperparameter.txt"
@@ -553,17 +551,17 @@ def main():
     save_model_info(has_vis_marker, filename, n_epochs, train_batch_size, learning_rate, weight_decay,
                     datapath, n_traindata, epoch_losses, reconstruction_losses, n_testdata, test_losses)
 
-    filename = folderdir + "/epoch_losses.txt"
-    with open(filename, "w") as f:
-        for i, loss in enumerate(epoch_losses):
-            print(i + 1, loss, file=f)
-    f.close()
+    #filename = folderdir + "/epoch_losses.txt"
+    #with open(filename, "w") as f:
+    #    for i, loss in enumerate(epoch_losses):
+    #        print(i + 1, loss, file=f)
+    #f.close()
 
-    filename = folderdir + "/reconstruction_losses.txt"
-    with open(filename, "w") as f:
-        for i, loss in enumerate(reconstruction_losses):
-            print(i + 1, loss, file=f)
-    f.close()
+    #filename = folderdir + "/reconstruction_losses.txt"
+    #with open(filename, "w") as f:
+    #    for i, loss in enumerate(reconstruction_losses):
+    #        print(i + 1, loss, file=f)
+    #f.close()
 
 
     filename = folderdir + "/validation_losses.txt"

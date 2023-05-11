@@ -251,9 +251,20 @@ def main(data_filename = None, target_filename = None):
             if del_z: cube.delete_all_z()
             data_cubes.append(cube)
 
-    ###### select what cubes to add to the dataset
+    ###### select what cubes to add to the dataset #################################################################
     # n_cubes standardmäßig 200
-    generate_cubes(side_len_lower=1, side_len_upper=1)
+    data_mode = 'testing' #'training'
+    sl_l = 1
+    sl_u = 1
+    n = 20
+    n_cor = [0, 1, 2]
+    g_noise = [0]
+    z_mis = False
+
+    generate_cubes(n_del_corners=n_cor[0], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
+    generate_cubes(n_del_corners=n_cor[1], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
+    generate_cubes(n_del_corners=n_cor[2], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
+
 
     ### create training data file
     curr_time = time.strftime("%Y_%m_%d-%H_%M_%S")
@@ -266,7 +277,10 @@ def main(data_filename = None, target_filename = None):
 
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename
 
-    os.remove(path)
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
     with open(path, 'a') as file:
         for cube in data_cubes:
@@ -287,7 +301,11 @@ def main(data_filename = None, target_filename = None):
 
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename
 
-    os.remove(path)
+    try:
+        os.remove(path)
+    except OSError:
+        pass
+
     with open(path, 'a') as file:
         for cube in target_cubes:
             corner = []
@@ -299,13 +317,28 @@ def main(data_filename = None, target_filename = None):
             print(*corner, sep=',', file=file)
     file.close()
 
+    filename = 'dataset_info.txt'
+    path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/' + filename
+
+    with open(path, "w") as file:
+        print('Dataset for: ' + data_mode, file=file)
+        print('Total number of cubes in dataset: ', str(len(data_cubes)), file=file)
+        print("Number of cubes in one category: ", str(n), file=file)
+        print('Range of sidelengths: ', str(sl_l) + '-' + str(sl_u), file=file)
+        print('Number of corners missing in one category: ', str(n_cor), file=file)
+        print('Noise used in one category: ', str(g_noise), file=file)
+        print('z-coordinates missing: ', str(z_mis), file=file)
+    file.close()
+
     #target_cubes[0].print_cube(scale=300)
     cube_1 = target_cubes[0]
-    cube_1.print_cube(scale=50)
+    cube_1.print_cube(scale=100)
+    cube_2 = target_cubes[1]
+    cube_2.print_cube(scale=100)
     print('total number of cubes in the dataset: ' + str(len(data_cubes)))
 
 if __name__ == "__main__":
-    main()
+    main(data_filename='test_data.txt', target_filename='test_target.txt')
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])
