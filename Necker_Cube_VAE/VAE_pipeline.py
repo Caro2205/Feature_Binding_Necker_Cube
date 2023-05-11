@@ -109,32 +109,47 @@ def train_model(model, dataloader, n_epochs, criterion, optimizer, outputs, epoc
     return outputs, epoch_losses, reconstruction_losses
 
 
-def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, validation_losses):
+def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, validation_losses, z_validation_losses):
     running_loss = 0
+    z_running_loss = 0
     with torch.no_grad():
         for corners, coordinates in dataloader:
             reconstruction, mu, sigma = model(corners, "testing")
             validation_outputs.append(reconstruction)
 
             MSE = criterion(reconstruction, coordinates)
+
             root_MSE = torch.sqrt(MSE)
             root_MSE_sum = torch.sum(root_MSE)
             running_loss += root_MSE_sum #* coordinates.shape[0] # * batch_size
 
+            z_MSE = criterion(reconstruction[:, 2::3], coordinates[:, 2::3]) #use criterion only on z-coordinates
+
+            z_root_MSE = torch.sqrt(z_MSE)
+            z_root_MSE_sum = torch.sum(z_root_MSE)
+            z_running_loss += z_root_MSE_sum
+
         loss = running_loss / (len(dataloader.sampler) * 24)     # / (größe validation datensatz * anzahl Koordinaten)
         validation_losses.append(loss.item())
 
-        return validation_outputs, validation_losses
+        z_loss = z_running_loss / (len(dataloader.sampler) * 8)
+        z_validation_losses.append(z_loss.item())
+
+        return validation_outputs, validation_losses, z_validation_losses
 
 
 
-def save_loss_plot(losses, title, x_label, y_label, path, n_epochs):
+def save_loss_plot(losses, title, x_label, y_label, path, n_epochs, add_losses=None):
     plt.style.use('fivethirtyeight')
     plt.xticks(range(0, n_epochs, 200))
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
-    plt.plot(losses)
+    plt.title(title)
+    plt.plot(losses, linewidth=1, label = 'all coordinates')
+    if add_losses is not None:
+        plt.plot(add_losses, linewidth=1, color='red', label = 'z-coordinates')
+        plt.legend()
     plt.savefig(path+".pdf", bbox_inches='tight')
     # plt.show()
     plt.close()
@@ -315,6 +330,7 @@ def test_model(model, dataloader, criterion):
         reconstruction, mu, sigma = model(corners, mode="testing")
 
         MSE = criterion(reconstruction, coordinates)
+
         root_MSE = torch.sqrt(MSE)
         #################################
         root_MSE_sum = torch.sum(root_MSE)
@@ -459,6 +475,7 @@ def main():
     epoch_losses = []
     reconstruction_losses = []
 
+    z_validation_losses = []
     validation_losses = []
     validation_outputs = []
 
@@ -490,16 +507,17 @@ def main():
                                                                    i)
 
         # use validation dataset to calculate root mse
-        validation_outputs, validation_losses = validate_model(model, validation_loader, n_epochs, validation_crit, validation_outputs, validation_losses)
+        validation_outputs, validation_losses, z_validation_losses = validate_model(model, validation_loader, n_epochs, validation_crit, validation_outputs, validation_losses, z_validation_losses)
 
 
 
 
     # print losses
-    save_loss_plot(epoch_losses, 'Average loss in each epoch', 'Iterations', 'Loss', folderdir + "epoch_losses", n_epochs)
+    save_loss_plot(epoch_losses, 'Average loss in each epoch', 'Iterations', 'Loss', folderdir + "epoch_losses", n_epochs, add_losses=None)
     save_loss_plot(reconstruction_losses, 'Average reconstruction loss in each epoch', 'Iterations', 'Loss',
-                   folderdir + "rec_losses", n_epochs)
-    save_loss_plot(validation_losses, "Reconstruction RMSE of validation data", 'Iterations', 'Loss', folderdir + "validation_losses", n_epochs)
+                   folderdir + "rec_losses", n_epochs, add_losses=None)
+    save_loss_plot(validation_losses, "Reconstruction RMSE of validation data", 'Iterations', 'Loss', folderdir + "validation_losses", n_epochs, add_losses=z_validation_losses)
+    #save_loss_plot(z_validation_losses, 'Reconstruction RSME of z-coordinates of validation data', 'Iterations', 'Loss', folderdir + 'z_validation_losses', n_epochs)
 
     # saving model parameters
     model_name = folderdir + "saved_model_parameters.pt"
