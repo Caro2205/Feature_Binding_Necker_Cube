@@ -150,7 +150,7 @@ def save_loss_plot(losses, title, x_label, y_label, path, n_epochs, add_losses=N
     if add_losses is not None:
         plt.plot(add_losses, linewidth=1, color='red', label = 'z-coordinates')
         plt.legend()
-    plt.savefig(path+".pdf", bbox_inches='tight')
+    plt.savefig(path+".png", bbox_inches='tight')
     # plt.show()
     plt.close()
 
@@ -324,6 +324,7 @@ def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, lea
 def test_model(model, dataloader, criterion):
     test_losses = []
     test_coords = []
+    z_test_losses = []
     #image_path = path + "/test_data_image_reconstructions"
 
     for corners, coordinates in dataloader:
@@ -337,12 +338,18 @@ def test_model(model, dataloader, criterion):
         root_MSE_av = root_MSE_sum/24
         test_losses.append(root_MSE_av.item())
 
+        z_MSE = criterion(reconstruction[:, 2::3], coordinates[:, 2::3])
+        z_root_MSE = torch.sqrt(z_MSE)
+        z_root_MSE_sum = torch.sum(z_root_MSE)
+        z_root_MSE_av = z_root_MSE_sum / 8
+        z_test_losses.append(z_root_MSE_av.item())
+
         # # reconstruct images and coordinates
         # save_images(corners, reconstruction, image_path,  has_vis_marker=has_vis_marker)
         # #todo: save_coordinates()
         test_coords.append(reconstruction)
 
-    return test_losses, test_coords
+    return test_losses, test_coords, z_test_losses
 
 
 def check_corners_close(corner_list):
@@ -541,11 +548,17 @@ def main():
     if test_datapath is not None:
         save_outputs(model, testimages_idx, test_dataset, testimagedir,  folderdir, "final", has_vis_marker)  # test dataset # coorddir, , False
         test_criterion = nn.MSELoss(reduction='none')
-        test_losses, test_coords = test_model(model, test_loader, test_criterion)
+        test_losses, test_coords, z_test_losses = test_model(model, test_loader, test_criterion)
 
         filename = folderdir + "/test_losses.txt"
         with open(filename, "w") as f:
             for i, loss in enumerate(test_losses):
+                print(i + 1, loss, file=f)
+        f.close()
+
+        filename = folderdir + "/z_test_losses.txt"
+        with open(filename, "w") as f:
+            for i, loss in enumerate(z_test_losses):
                 print(i + 1, loss, file=f)
         f.close()
         #save_loss_plot(test_losses, "Reconstruction RMSE of test data", 'Iterations', 'Loss',
