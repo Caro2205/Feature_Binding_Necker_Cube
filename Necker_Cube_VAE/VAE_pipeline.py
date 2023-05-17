@@ -4,6 +4,8 @@ import os
 import time
 import random
 
+import scipy.stats as stats
+
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -109,22 +111,29 @@ def train_model(model, dataloader, n_epochs, criterion, optimizer, outputs, epoc
     return outputs, epoch_losses, reconstruction_losses
 
 
-def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, validation_losses, z_validation_losses):
+def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, validation_losses, z_validation_losses, xy_validation_losses):
     running_loss = 0
     z_running_loss = 0
+    xy_running_loss = 0
     with torch.no_grad():
         for corners, coordinates in dataloader:
             reconstruction, mu, sigma = model(corners, "testing")
             validation_outputs.append(reconstruction)
 
             MSE = criterion(reconstruction, coordinates)
-
             root_MSE = torch.sqrt(MSE)
             root_MSE_sum = torch.sum(root_MSE)
-            running_loss += root_MSE_sum #* coordinates.shape[0] # * batch_size
+            running_loss += root_MSE_sum #* coordinates.shape[0] # * batch_siz
+
+            coordinates_xy = coordinates[:, [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22]]
+            reconstruction_xy = reconstruction[:, [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22]]
+
+            xy_MSE = criterion(reconstruction_xy, coordinates_xy)
+            xy_root_MSE = torch.sqrt(xy_MSE)
+            xy_root_MSE_sum = torch.sum(xy_root_MSE)
+            xy_running_loss += xy_root_MSE_sum  # * coordinates.shape[0] # * batch_sizee
 
             z_MSE = criterion(reconstruction[:, 2::3], coordinates[:, 2::3]) #use criterion only on z-coordinates
-
             z_root_MSE = torch.sqrt(z_MSE)
             z_root_MSE_sum = torch.sum(z_root_MSE)
             z_running_loss += z_root_MSE_sum
@@ -132,24 +141,29 @@ def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, v
         loss = running_loss / (len(dataloader.sampler) * 24)     # / (größe validation datensatz * anzahl Koordinaten)
         validation_losses.append(loss.item())
 
+        xy_loss = xy_running_loss / (len(dataloader.sampler) * 16)
+        xy_validation_losses.append(xy_loss.item())
+
         z_loss = z_running_loss / (len(dataloader.sampler) * 8)
         z_validation_losses.append(z_loss.item())
 
-        return validation_outputs, validation_losses, z_validation_losses
+        return validation_outputs, validation_losses, z_validation_losses, xy_validation_losses
 
 
 
-def save_loss_plot(losses, title, x_label, y_label, path, n_epochs, add_losses=None):
+def save_loss_plot(losses, title, x_label, y_label, path, n_epochs, add_losses_z=None, add_losses_xy=None):
     plt.style.use('fivethirtyeight')
     plt.xticks(range(0, n_epochs, 200))
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
     plt.title(title)
-    plt.plot(losses, linewidth=1, label = 'all coordinates')
-    if add_losses is not None:
-        plt.plot(add_losses, linewidth=1, color='red', label = 'z-coordinates')
+    plt.plot(losses, linewidth=1, color='red', label = 'all coordinates')
+    if add_losses_z is not None:
+        plt.plot(add_losses_z, linewidth=1, color='b', label = 'z-coordinates')
         plt.legend()
+    if add_losses_xy is not None:
+        plt.plot(add_losses_xy, linewidth=1, color='g', label = 'x- and y-coordinates')
     plt.savefig(path+".png", bbox_inches='tight')
     # plt.show()
     plt.close()
@@ -303,40 +317,62 @@ def create_folders(curr_time):
 
 def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, learning_rate, weight_decay, datapath,
                     trainingdata_size,
-                    epoch_losses, rec_losses_train, testdata_size, rec_loss_test):
-    with open(filename, "w") as file:
-        print("Marker for visibility of corner was used:", str(has_vis_marker), file=file)
-        print("Number Epochs:", str(n_epochs), file=file)
-        print("Training Batch Size:", str(training_batch_size), file=file)
-        print("Learning Rate:", str(learning_rate), file=file)
-        print("Weight Decay:", str(weight_decay), file=file)
-        print("Training Data:", datapath, file=file)
-        print("\n", file=file)
-        print("Size Trainingdata:", str(trainingdata_size), file=file)
-        print("Loss last epoch:", str(epoch_losses[len(epoch_losses) - 1]), file=file)
-        print("Reconstruction loss last epoch:", str(rec_losses_train[len(rec_losses_train) - 1]), file=file)
-        print("\n", file=file)
-        print("Size Testingdata:", (str(testdata_size)), file=file)
-        #print("Test Reconstruction Loss:", str(rec_loss_test), file=file)
-    file.close()
+                    epoch_losses, rec_losses_train, testdata_size, test_losses, xy_test_losses, z_test_losses,
+                    xy_validation_losses, z_validation_losses
+                    ):
+    # t-test between z coords and xy coords of validation data
+    valid_ttest_stat, valid_ttest_p = stats.ttest_rel(xy_validation_losses, z_validation_losses, alternative='less')
+    ttest_test_losses_stat, ttest_test_losses_p = stats.ttest_rel(xy_test_losses, z_test_losses, alternative='less')
+
+    with open(filename, "w") as f:
+        print("Marker for visibility of corner was used:", str(has_vis_marker), file=f)
+        print("Number Epochs:", str(n_epochs), file=f)
+        print("Training Batch Size:", str(training_batch_size), file=f)
+        print("Learning Rate:", str(learning_rate), file=f)
+        print("Weight Decay:", str(weight_decay), file=f)
+        #print("Training Data:", datapath, file=f)
+        print("Size Trainingdata:", str(trainingdata_size), file=f)
+        print("Loss last epoch:", str(epoch_losses[len(epoch_losses) - 1]), file=f)
+        print("Reconstruction loss last epoch:", str(rec_losses_train[len(rec_losses_train) - 1]), file=f)
+        print("Size Testingdata:", (str(testdata_size)), file=f)
+        print("\n", file=f)
+        print('Average test loss overall: ' + str(np.mean(test_losses)), file=f)
+        print('Average test loss xy-coordinates: ' + str(np.mean(xy_test_losses)), file=f)
+        print('Average test loss z-coordinates: ' + str(np.mean(z_test_losses)), file=f)
+        print('t-test results test loss higher in z-coords than xy-coords:', file=f)
+        print('test statistic: ' + str(np.round(ttest_test_losses_stat, decimals=4)), file=f)
+        print('p-value: ' + str(np.round(ttest_test_losses_p, decimals=4)), file=f)
+        print("\n", file=f)
+        print('t-test results test validation higher in z-coords than xy-coords:', file=f)
+        print('t-statistic: ' + str(np.round(valid_ttest_stat), decimals=4), file=f)
+        print('p-value: ' + str(np.round(valid_ttest_p), decimals=4), file=f)
+    f.close()
 
 
 def test_model(model, dataloader, criterion):
     test_losses = []
     test_coords = []
     z_test_losses = []
+    xy_test_losses = []
     #image_path = path + "/test_data_image_reconstructions"
 
     for corners, coordinates in dataloader:
         reconstruction, mu, sigma = model(corners, mode="testing")
 
         MSE = criterion(reconstruction, coordinates)
-
         root_MSE = torch.sqrt(MSE)
-        #################################
         root_MSE_sum = torch.sum(root_MSE)
         root_MSE_av = root_MSE_sum/24
         test_losses.append(root_MSE_av.item())
+
+        coordinates_xy = coordinates[:, [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22]]
+        reconstruction_xy = reconstruction[:, [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22]]
+
+        xy_MSE = criterion(reconstruction_xy, coordinates_xy)
+        xy_root_MSE = torch.sqrt(xy_MSE)
+        xy_root_MSE_sum = torch.sum(xy_root_MSE)
+        xy_root_MSE_av = xy_root_MSE_sum/16
+        xy_test_losses.append(xy_root_MSE_av.item())
 
         z_MSE = criterion(reconstruction[:, 2::3], coordinates[:, 2::3])
         z_root_MSE = torch.sqrt(z_MSE)
@@ -349,7 +385,7 @@ def test_model(model, dataloader, criterion):
         # #todo: save_coordinates()
         test_coords.append(reconstruction)
 
-    return test_losses, test_coords, z_test_losses
+    return test_losses, test_coords, z_test_losses, xy_test_losses
 
 
 def check_corners_close(corner_list):
@@ -423,8 +459,8 @@ def main():
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
-    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/data.txt'  # data used for training (model input)
-    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/target.txt'  # can be None     # data used for training (desired model output)
+    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_data.txt'  # data used for training (model input)
+    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_target.txt'  # can be None     # data used for training (desired model output)
 
     test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_data.txt'  # data used to see how the model performs on that data after certain training epochs
     test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'
@@ -482,6 +518,7 @@ def main():
     epoch_losses = []
     reconstruction_losses = []
 
+    xy_validation_losses = []
     z_validation_losses = []
     validation_losses = []
     validation_outputs = []
@@ -514,16 +551,16 @@ def main():
                                                                    i)
 
         # use validation dataset to calculate root mse
-        validation_outputs, validation_losses, z_validation_losses = validate_model(model, validation_loader, n_epochs, validation_crit, validation_outputs, validation_losses, z_validation_losses)
+        validation_outputs, validation_losses, z_validation_losses, xy_validation_losses = validate_model(model, validation_loader, n_epochs, validation_crit, validation_outputs, validation_losses, z_validation_losses, xy_validation_losses)
 
 
 
 
     # print losses
-    save_loss_plot(epoch_losses, 'Average loss in each epoch', 'Iterations', 'Loss', folderdir + "epoch_losses", n_epochs, add_losses=None)
+    save_loss_plot(epoch_losses, 'Average loss in each epoch', 'Iterations', 'Loss', folderdir + "epoch_losses", n_epochs)
     save_loss_plot(reconstruction_losses, 'Average reconstruction loss in each epoch', 'Iterations', 'Loss',
-                   folderdir + "rec_losses", n_epochs, add_losses=None)
-    save_loss_plot(validation_losses, "Reconstruction RMSE of validation data", 'Iterations', 'Loss', folderdir + "validation_losses", n_epochs, add_losses=z_validation_losses)
+                   folderdir + "rec_losses", n_epochs)
+    save_loss_plot(validation_losses, "Reconstruction RMSE of validation data", 'Iterations', 'Loss', folderdir + "validation_losses", n_epochs, add_losses_z=z_validation_losses, add_losses_xy=xy_validation_losses)
     #save_loss_plot(z_validation_losses, 'Reconstruction RSME of z-coordinates of validation data', 'Iterations', 'Loss', folderdir + 'z_validation_losses', n_epochs)
 
     # saving model parameters
@@ -548,22 +585,21 @@ def main():
     if test_datapath is not None:
         save_outputs(model, testimages_idx, test_dataset, testimagedir,  folderdir, "final", has_vis_marker)  # test dataset # coorddir, , False
         test_criterion = nn.MSELoss(reduction='none')
-        test_losses, test_coords, z_test_losses = test_model(model, test_loader, test_criterion)
+        test_losses, test_coords, z_test_losses, xy_test_losses = test_model(model, test_loader, test_criterion)
 
-        filename = folderdir + "/test_losses.txt"
-        with open(filename, "w") as f:
-            for i, loss in enumerate(test_losses):
-                print(i + 1, loss, file=f)
-        f.close()
+        #filename = folderdir + "/test_losses.txt"      # save every single test loss
+        #with open(filename, "w") as f:
+        #    for i, loss in enumerate(test_losses):
+        #        print(i + 1, loss, file=f)
+        #f.close()
 
-        filename = folderdir + "/z_test_losses.txt"
-        with open(filename, "w") as f:
-            for i, loss in enumerate(z_test_losses):
-                print(i + 1, loss, file=f)
-        f.close()
+
+
+
         #save_loss_plot(test_losses, "Reconstruction RMSE of test data", 'Iterations', 'Loss',
         #               folderdir + "test_losses", len(test_dataset))
 
+        # save coodinates of test cubes
         #filename = folderdir + "/test_coords_final.txt"
         #with open(filename, "w") as f:
         #    for i, loss in enumerate(test_coords):
@@ -575,12 +611,16 @@ def main():
 
     save_outputs(model, validation_indices, dataset, imagedir, folderdir, "final", has_vis_marker)  # validation dataset # coorddir, True
 
+
+
+
     # save model information
     filename = folderdir + "/Hyperparameter.txt"
     n_traindata = dataset_size - split
     n_testdata = split
     save_model_info(has_vis_marker, filename, n_epochs, train_batch_size, learning_rate, weight_decay,
-                    datapath, n_traindata, epoch_losses, reconstruction_losses, n_testdata, test_losses)
+                    datapath, n_traindata, epoch_losses, reconstruction_losses, n_testdata, test_losses,
+                    xy_test_losses, z_test_losses, xy_validation_losses, z_validation_losses)
 
     #filename = folderdir + "/epoch_losses.txt"
     #with open(filename, "w") as f:
@@ -594,12 +634,12 @@ def main():
     #        print(i + 1, loss, file=f)
     #f.close()
 
+    #filename = folderdir + "/validation_losses.txt"
+    #with open(filename, "w") as f:
+    #    for epoch, loss in enumerate(validation_losses):
+    #        print(epoch+1, loss, file=f)
+    #f.close()
 
-    filename = folderdir + "/validation_losses.txt"
-    with open(filename, "w") as f:
-        for epoch, loss in enumerate(validation_losses):
-            print(epoch+1, loss, file=f)
-    f.close()
     # save seed and test MSE to ensure responsibility
     # seed and test MSE are added to existing file in main directory
     path = "./check_reproducibility_with_vis_marker.txt" if has_vis_marker \

@@ -206,7 +206,7 @@ def main(data_filename = None, target_filename = None):
     target_cubes = []
     data_cubes = []
     center_0 = (0, 0, 0)
-    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3):
+    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3, rand_cor = False, rand_cor_range = 0):
         #noise_intens = []  # (Tim's BA:) noise >= 0.4 bad for model performance
         rotations = []
         lengths = []
@@ -239,9 +239,19 @@ def main(data_filename = None, target_filename = None):
             cube.rotate_z(rotations_z[i])
             target_cubes.append(cube)
 
-            del_corners = random.sample(range(8), n_del_corners)
-            for j in range(n_del_corners):
-                visibility[del_corners[j]] = 0
+            if rand_cor: # choose a random amount of corners to delete
+                rand_del_cor = random.sample(range(rand_cor_range), 1)
+                r = rand_del_cor[0]
+                del_corners = random.sample(range(8), r)
+                for j in range(r):
+                    visibility[del_corners[j]] = 0
+            else: # use pre defined number of corners to delete
+                del_corners = random.sample(range(8), n_del_corners)
+                for j in range(n_del_corners):
+                    visibility[del_corners[j]] = 0
+
+
+
             cube = Cube(center_0, lengths[i], visibility)
             cube.rotate_x(rotations_x[i])
             cube.rotate_y(rotations_y[i])
@@ -252,18 +262,20 @@ def main(data_filename = None, target_filename = None):
             data_cubes.append(cube)
 
     ###### select what cubes to add to the dataset #################################################################
-    # n_cubes standardmäßig 200
-    data_mode = 'testing' #'training'
-    sl_l = 1
-    sl_u = 1
-    n = 20
-    n_cor = [0, 1, 2]
-    g_noise = [0]
-    z_mis = False
 
-    generate_cubes(n_del_corners=n_cor[0], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
-    generate_cubes(n_del_corners=n_cor[1], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
-    generate_cubes(n_del_corners=n_cor[2], side_len_lower=sl_l, side_len_upper=sl_u, n_cubes=n)
+    data_mode = 'training' #'training'
+    sl_l = 0.5
+    sl_u = 3
+    n = 200
+    n_cor = [0, 1, 2, 0, 0, 1, 2, 0]
+    g_noise = [0, 0, 0, 0, 0.15, 0.15, 0.15, 0.15]
+    z_mis = [False, False, False, True, False, False, False, True]
+    r_cor = [False] * 8
+    corner_range = [0] * 8 # random number of corners to delete from 0 to n-1
+
+    for i in range(len(g_noise)):
+        generate_cubes(n_cubes=n, n_del_corners=n_cor[i], side_len_lower=sl_l, side_len_upper=sl_u, noise=g_noise[i], del_z=z_mis[i],
+                       rand_cor=r_cor[i], rand_cor_range=corner_range[i])
 
 
     ### create training data file
@@ -317,7 +329,10 @@ def main(data_filename = None, target_filename = None):
             print(*corner, sep=',', file=file)
     file.close()
 
-    filename = 'dataset_info.txt'
+    if data_mode == 'training':
+        filename = 'training_data_info.txt'
+    else:
+        filename = 'test_data_info.txt'
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/' + filename
 
     with open(path, "w") as file:
@@ -325,20 +340,22 @@ def main(data_filename = None, target_filename = None):
         print('Total number of cubes in dataset: ', str(len(data_cubes)), file=file)
         print("Number of cubes in one category: ", str(n), file=file)
         print('Range of sidelengths: ', str(sl_l) + '-' + str(sl_u), file=file)
+        print('Are number of missing corners chosen randomly', str(r_cor), file=file)
+        print('Range of random numbers of deleted corners: ', str(corner_range), file=file)
         print('Number of corners missing in one category: ', str(n_cor), file=file)
         print('Noise used in one category: ', str(g_noise), file=file)
         print('z-coordinates missing: ', str(z_mis), file=file)
     file.close()
 
     #target_cubes[0].print_cube(scale=300)
-    cube_1 = target_cubes[0]
-    cube_1.print_cube(scale=100)
-    cube_2 = target_cubes[1]
-    cube_2.print_cube(scale=100)
+    #cube_1 = target_cubes[0]
+    #cube_1.print_cube(scale=100)
+    #cube_2 = target_cubes[1]
+    #cube_2.print_cube(scale=100)
     print('total number of cubes in the dataset: ' + str(len(data_cubes)))
 
 if __name__ == "__main__":
-    main(data_filename='test_data.txt', target_filename='test_target.txt')
+    main(data_filename='training_data.txt', target_filename='training_target.txt')
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])
