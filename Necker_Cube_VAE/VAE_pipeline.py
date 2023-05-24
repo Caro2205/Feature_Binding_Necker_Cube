@@ -158,14 +158,17 @@ def save_loss_plot(losses, title, x_label, y_label, path, n_epochs, add_losses_z
     plt.ylabel(y_label)
     plt.title(title)
     plt.title(title)
-    plt.plot(losses, linewidth=1, color='red', label = 'all coordinates')
+
     if add_losses_z is not None:
-        plt.plot(add_losses_z, linewidth=1, color='b', label = 'z-coordinates')
+        plt.plot(add_losses_z, linewidth=1, color='#00DB07', label = 'z-coordinates')
         plt.legend()
     if add_losses_xy is not None:
-        plt.plot(add_losses_xy, linewidth=1, color='g', label = 'x- and y-coordinates')
+        plt.plot(add_losses_xy, linewidth=1, color='#0E45F9', label = 'x- and y-coordinates')
+        plt.legend()
+    elif add_losses_xy is None and add_losses_z is None:
+        plt.plot(losses, linewidth=1, color='red')
+
     plt.savefig(path+".png", bbox_inches='tight')
-    # plt.show()
     plt.close()
 
 
@@ -332,20 +335,20 @@ def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, lea
         print("Weight Decay:", str(weight_decay), file=f)
         #print("Training Data:", datapath, file=f)
         print("Size Trainingdata:", str(trainingdata_size), file=f)
-        print("Loss last epoch:", str(epoch_losses[len(epoch_losses) - 1]), file=f)
-        print("Reconstruction loss last epoch:", str(rec_losses_train[len(rec_losses_train) - 1]), file=f)
+        print("Loss last epoch:", str(np.round(epoch_losses[len(epoch_losses) - 1], decimals=4)), file=f)
+        print("Reconstruction loss last epoch:", str(np.round(rec_losses_train[len(rec_losses_train) - 1], decimals=4)), file=f)
         print("Size Testingdata:", (str(testdata_size)), file=f)
         print("\n", file=f)
-        print('Average test loss overall: ' + str(np.mean(test_losses)), file=f)
-        print('Average test loss xy-coordinates: ' + str(np.mean(xy_test_losses)), file=f)
-        print('Average test loss z-coordinates: ' + str(np.mean(z_test_losses)), file=f)
+        print('Average test loss overall: ' + str(np.round(np.mean(test_losses), decimals=4)), file=f)
+        print('Average test loss xy-coordinates: ' + str(np.round(np.mean(xy_test_losses), decimals=4)), file=f)
+        print('Average test loss z-coordinates: ' + str(np.round(np.mean(z_test_losses), decimals=4)), file=f)
         print('t-test results test loss higher in z-coords than xy-coords:', file=f)
         print('test statistic: ' + str(np.round(ttest_test_losses_stat, decimals=4)), file=f)
         print('p-value: ' + str(np.round(ttest_test_losses_p, decimals=4)), file=f)
         print("\n", file=f)
         print('t-test results test validation higher in z-coords than xy-coords:', file=f)
-        print('t-statistic: ' + str(np.round(valid_ttest_stat), decimals=4), file=f)
-        print('p-value: ' + str(np.round(valid_ttest_p), decimals=4), file=f)
+        print('t-statistic: ' + str(np.round(valid_ttest_stat, decimals=4)), file=f)
+        print('p-value: ' + str(np.round(valid_ttest_p, decimals=4)), file=f)
     f.close()
 
 
@@ -615,7 +618,7 @@ def main():
 
 
     # save model information
-    filename = folderdir + "/Hyperparameter.txt"
+    filename = folderdir + "/model_info.txt"
     n_traindata = dataset_size - split
     n_testdata = split
     save_model_info(has_vis_marker, filename, n_epochs, train_batch_size, learning_rate, weight_decay,

@@ -206,7 +206,7 @@ def main(data_filename = None, target_filename = None):
     target_cubes = []
     data_cubes = []
     center_0 = (0, 0, 0)
-    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3, rand_cor = False, rand_cor_range = 0):
+    def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3, rand_cor = False, rand_cor_range = 0, noise_freq = 10, input_noise=0):
         #noise_intens = []  # (Tim's BA:) noise >= 0.4 bad for model performance
         rotations = []
         lengths = []
@@ -256,26 +256,32 @@ def main(data_filename = None, target_filename = None):
             cube.rotate_x(rotations_x[i])
             cube.rotate_y(rotations_y[i])
             cube.rotate_z(rotations_z[i])
-            cube.add_noise(intensity=noise_seq[i])
+            if i % noise_freq == 0 and input_noise != 0:
+                cube.add_noise(input_noise) # intensity=noise_seq[i]
             cube.delete_corners()
             if del_z: cube.delete_all_z()
             data_cubes.append(cube)
+
+
+
 
     ###### select what cubes to add to the dataset #################################################################
 
     data_mode = 'training' #'training'
     sl_l = 0.5
     sl_u = 3
-    n = 200
-    n_cor = [0, 1, 2, 0, 0, 1, 2, 0]
-    g_noise = [0, 0, 0, 0, 0.15, 0.15, 0.15, 0.15]
-    z_mis = [False, False, False, True, False, False, False, True]
-    r_cor = [False] * 8
-    corner_range = [0] * 8 # random number of corners to delete from 0 to n-1
+    n = 800
+    n_cor = [0, 1, 2, 0]
+    g_noise = [0] * 4
+    z_mis = [False, False, False, True]
+    r_cor = [False] * 4
+    corner_range = [0] * 4 # random number of corners to delete from 0 to n-1
+    inp_noise = 0.15
+    noise_f = 4
 
-    for i in range(len(g_noise)):
+    for i in range(len(n_cor)):
         generate_cubes(n_cubes=n, n_del_corners=n_cor[i], side_len_lower=sl_l, side_len_upper=sl_u, noise=g_noise[i], del_z=z_mis[i],
-                       rand_cor=r_cor[i], rand_cor_range=corner_range[i])
+                       rand_cor=r_cor[i], rand_cor_range=corner_range[i], noise_freq=noise_f, input_noise=inp_noise)
 
 
     ### create training data file
@@ -343,7 +349,8 @@ def main(data_filename = None, target_filename = None):
         print('Are number of missing corners chosen randomly', str(r_cor), file=file)
         print('Range of random numbers of deleted corners: ', str(corner_range), file=file)
         print('Number of corners missing in one category: ', str(n_cor), file=file)
-        print('Noise used in one category: ', str(g_noise), file=file)
+        #print('Noise used in one category: ', str(g_noise), file=file)
+        print('Noise of: ' + str(inp_noise) + ' is added to every ' + str(noise_f) + 'th cube.', file=file)
         print('z-coordinates missing: ', str(z_mis), file=file)
     file.close()
 
