@@ -216,12 +216,12 @@ def main(data_filename = None, target_filename = None):
 
         noise_seq = [noise] * n_cubes
 
-        for i in np.linspace(side_len_lower, side_len_upper, n_cubes):
-            lengths.append(i)
+        for j in np.linspace(side_len_lower, side_len_upper, n_cubes):
+            lengths.append(j)
 
         # change range of rotations here if needed
-        for i in np.linspace(-180, 180, n_cubes):
-            rotations.append(i)
+        for k in np.linspace(-180, 180, n_cubes):
+            rotations.append(k)
 
         rotations_x = rotations
         random.shuffle(rotations_x)
@@ -245,7 +245,7 @@ def main(data_filename = None, target_filename = None):
                 del_corners = random.sample(range(8), r)
                 for j in range(r):
                     visibility[del_corners[j]] = 0
-            else: # use pre defined number of corners to delete
+            else: # use pre-defined number of corners to delete
                 del_corners = random.sample(range(8), n_del_corners)
                 for j in range(n_del_corners):
                     visibility[del_corners[j]] = 0
@@ -270,14 +270,14 @@ def main(data_filename = None, target_filename = None):
     data_mode = 'training' #'training'
     sl_l = 0.5
     sl_u = 3
-    n = 800
-    n_cor = [0, 1, 2, 0]
-    g_noise = [0] * 4
-    z_mis = [False, False, False, True]
-    r_cor = [False] * 4
-    corner_range = [0] * 4 # random number of corners to delete from 0 to n-1
-    inp_noise = 0.15
-    noise_f = 4
+    n = 2000
+    n_cor = [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+    g_noise = [0] * len(n_cor)
+    z_mis = [False, False, False, False, False, True, True, True, True, True]
+    r_cor = [False] * len(n_cor)
+    corner_range = [8] * len(n_cor)  # random number of corners to delete from 0 to n-1
+    inp_noise = 0.1
+    noise_f = 3
 
     for i in range(len(n_cor)):
         generate_cubes(n_cubes=n, n_del_corners=n_cor[i], side_len_lower=sl_l, side_len_upper=sl_u, noise=g_noise[i], del_z=z_mis[i],
@@ -360,6 +360,9 @@ def main(data_filename = None, target_filename = None):
     #cube_2 = target_cubes[1]
     #cube_2.print_cube(scale=100)
     print('total number of cubes in the dataset: ' + str(len(data_cubes)))
+    print(str(len(target_cubes)))
+
+    #data_cubes[0].print_cube(scale=300)
 
 if __name__ == "__main__":
     main(data_filename='training_data.txt', target_filename='training_target.txt')

@@ -321,7 +321,7 @@ def create_folders(curr_time):
 def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, learning_rate, weight_decay, datapath,
                     trainingdata_size,
                     epoch_losses, rec_losses_train, testdata_size, test_losses, xy_test_losses, z_test_losses,
-                    xy_validation_losses, z_validation_losses
+                    xy_validation_losses, z_validation_losses, validation_losses
                     ):
     # t-test between z coords and xy coords of validation data
     valid_ttest_stat, valid_ttest_p = stats.ttest_rel(xy_validation_losses, z_validation_losses, alternative='less')
@@ -346,6 +346,7 @@ def save_model_info(has_vis_marker, filename, n_epochs, training_batch_size, lea
         print('test statistic: ' + str(np.round(ttest_test_losses_stat, decimals=4)), file=f)
         print('p-value: ' + str(np.round(ttest_test_losses_p, decimals=4)), file=f)
         print("\n", file=f)
+        print('Last validation loss (for all/z/xy): ' + str(np.round(validation_losses[-1], decimals=4)) + ', ' + str(np.round(z_validation_losses[-1], decimals=4)) + ', ' + str(np.round(xy_validation_losses[-1], decimals=4)), file=f)
         print('t-test results test validation higher in z-coords than xy-coords:', file=f)
         print('t-statistic: ' + str(np.round(valid_ttest_stat, decimals=4)), file=f)
         print('p-value: ' + str(np.round(valid_ttest_p, decimals=4)), file=f)
@@ -395,8 +396,8 @@ def check_corners_close(corner_list):
     sorted_corners = np.copy(corner_list)
     # print(sorted_corners)
     x = sorted_corners[sorted_corners[:, 2].argsort()]
-    close_corners = x[:4]
-    far_corners = x[4:]
+    close_corners = x[:4] # lowest / closest z-coordinates
+    far_corners = x[4:] # highest / farthest z-coordinates
 
     return close_corners, far_corners
 
@@ -456,7 +457,7 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 2000 #1500
+    n_epochs = 1500 #1500
     train_batch_size = 40 # 40
     validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
@@ -623,7 +624,7 @@ def main():
     n_testdata = split
     save_model_info(has_vis_marker, filename, n_epochs, train_batch_size, learning_rate, weight_decay,
                     datapath, n_traindata, epoch_losses, reconstruction_losses, n_testdata, test_losses,
-                    xy_test_losses, z_test_losses, xy_validation_losses, z_validation_losses)
+                    xy_test_losses, z_test_losses, xy_validation_losses, z_validation_losses, validation_losses)
 
     #filename = folderdir + "/epoch_losses.txt"
     #with open(filename, "w") as f:
