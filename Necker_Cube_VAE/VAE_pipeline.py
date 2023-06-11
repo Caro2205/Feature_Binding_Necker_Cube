@@ -283,26 +283,32 @@ def save_images(cube, reconstruction, target, path, has_vis_marker, mode=None):
 
     s1 = pygame.Surface((WIDTH, HEIGHT))
     s2 = pygame.Surface((WIDTH, HEIGHT))
-    s3 = pygame.Surface((3 * WIDTH, HEIGHT))
+    s3 = pygame.Surface((WIDTH, HEIGHT))
+    s4 = pygame.Surface((3 * WIDTH, HEIGHT))
 
     s1.fill(WHITE)
     s2.fill(WHITE)
     s3.fill(WHITE)
+    s4.fill(WHITE)
 
     draw_cube(cube, 100, 4, s1, has_vis_marker)
     draw_cube(reconstruction, 100, 4, s2, has_vis_marker=False)
-    draw_cube(target, 100, 4, s3, has_vis_marker=False, x_offset=2*WIDTH)
+    draw_cube(target, 100, 4, s3, has_vis_marker=False)
 
-    s3.blit(s1, (0, 0))
-    s3.blit(s2, (WIDTH, 0))
-    pygame.draw.line(s3, BLACK, (WIDTH, 0), (WIDTH, HEIGHT))
+    s4.blit(s1, (0, 0))
+    s4.blit(s2, (WIDTH, 0))
+    s4.blit(s3, (2*WIDTH,0))
+    #s4.blit(s4, (3 * WIDTH, 0))
+    pygame.draw.line(s4, BLACK, (WIDTH, 0), (WIDTH, HEIGHT))
+    pygame.draw.line(s4, BLACK, (2 * WIDTH, 0), (2 * WIDTH, HEIGHT))
+    #pygame.draw.line(s4, BLACK, (3 * WIDTH, 0), (3 * WIDTH, HEIGHT))
 
     if mode == "rec_only":
         pygame.image.save(s2, path)
     elif mode == "original_only":
         pygame.image.save(s1, path)
     else:
-        pygame.image.save(s3, path)
+        pygame.image.save(s4, path)
 
 
 def create_folders(curr_time):
