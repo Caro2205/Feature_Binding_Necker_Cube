@@ -17,9 +17,6 @@ from torchsummary import summary
 
 
 import VAE_model as VAE
-import VAE_model_small
-import VAE_model_small as VAE_small
-import VAE_model_large as VAE_large
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -275,16 +272,18 @@ def display_cube(corner_list, scale=100, title="cube", has_vis_marker=True):
     pygame.quit()
 
 
-def save_images(cube, reconstruction, path, has_vis_marker, mode=None):
+def save_images(cube, reconstruction, target, path, has_vis_marker, mode=None):
     cube = cube.detach().numpy()
     reconstruction = reconstruction.detach().numpy()
+    target = target.detach().numpy()
 
     cube = full_corner_reformer(cube) if has_vis_marker else coordinate_reformer(cube)
     reconstruction = coordinate_reformer(reconstruction)
+    target = coordinate_reformer(target)
 
     s1 = pygame.Surface((WIDTH, HEIGHT))
     s2 = pygame.Surface((WIDTH, HEIGHT))
-    s3 = pygame.Surface((2 * WIDTH, HEIGHT))
+    s3 = pygame.Surface((3 * WIDTH, HEIGHT))
 
     s1.fill(WHITE)
     s2.fill(WHITE)
@@ -292,6 +291,7 @@ def save_images(cube, reconstruction, path, has_vis_marker, mode=None):
 
     draw_cube(cube, 100, 4, s1, has_vis_marker)
     draw_cube(reconstruction, 100, 4, s2, has_vis_marker=False)
+    draw_cube(target, 100, 4, s3, has_vis_marker=False, x_offset=2*WIDTH)
 
     s3.blit(s1, (0, 0))
     s3.blit(s2, (WIDTH, 0))
@@ -411,13 +411,13 @@ def save_outputs(model, indices, dataset, imagedir, folderdir, epochs, has_vis_m
     indices_sorted.sort()
 
     for i in indices_sorted:
-        cube, _ = dataset.__getitem__(i)
+        cube, target = dataset.__getitem__(i)
         output, _, _ = model(cube, mode="testing")
 
         filename = "cube_" + str(i + 1)
         path = imagedir + "epoch_" + str(epochs) + "/" + filename + ".png"
 
-        save_images(cube, output, path, has_vis_marker, mode=None)
+        save_images(cube, output, target, path, has_vis_marker, mode=None)
         coords.append(coordinate_reformer(output.detach().numpy()))
 
     #if save_coords:
@@ -457,14 +457,14 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 1500 #1500
-    train_batch_size = 40 # 40
-    validation_batch_size = 40
+    n_epochs = 500 #1500
+    train_batch_size = 100 # 40
+    validation_batch_size = 100
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
-    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_data.txt'  # data used for training (model input)
-    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_target.txt'  # can be None     # data used for training (desired model output)
+    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/small_data.txt'  # data used for training (model input)
+    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/small_target.txt'  # can be None     # data used for training (desired model output)
 
     test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_data.txt'  # data used to see how the model performs on that data after certain training epochs
     test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'

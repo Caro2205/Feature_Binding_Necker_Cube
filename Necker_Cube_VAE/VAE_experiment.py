@@ -35,7 +35,7 @@ def main():
     # get corners of cube and target cube
     corners, coordinates = train_loader.dataset[0]
 
-    mask = [1, 4, 5, 6, 10, 14, 16, 17, 20, 24, 25, 28] #3, 7, 11, 15, 19, 23, 27, 31 are visibility markers
+    mask = [1, 4, 5, 6, 10, 14, 16, 17, 20, 24, 25, 28]  #3, 7, 11, 15, 19, 23, 27, 31 are visibility markers
     corners_masked = corners.clone()
     corners_masked[mask] = 0
 

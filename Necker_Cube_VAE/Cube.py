@@ -270,10 +270,10 @@ def main(data_filename = None, target_filename = None):
     data_mode = 'training' #'training'
     sl_l = 0.5
     sl_u = 3
-    n = 2000
-    n_cor = [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+    n = 200
+    n_cor = [0, 1, 2, 0, 1]
     g_noise = [0] * len(n_cor)
-    z_mis = [False, False, False, False, False, True, True, True, True, True]
+    z_mis = [False, False, False, True, True]
     r_cor = [False] * len(n_cor)
     corner_range = [8] * len(n_cor)  # random number of corners to delete from 0 to n-1
     inp_noise = 0.1
@@ -365,7 +365,7 @@ def main(data_filename = None, target_filename = None):
     #data_cubes[0].print_cube(scale=300)
 
 if __name__ == "__main__":
-    main(data_filename='training_data.txt', target_filename='training_target.txt')
+    main(data_filename='small_data.txt', target_filename='small_target.txt')
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])

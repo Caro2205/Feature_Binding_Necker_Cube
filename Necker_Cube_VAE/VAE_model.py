@@ -29,7 +29,7 @@ class VariationalAutoencoder(nn.Module):
 
         self.encoder = nn.Sequential(
             nn.Linear(input_size, 60),  # input layer
-            nn.Tanh(), # nn.ReLU()
+            nn.Tanh(),  # nn.ReLU()
             nn.Linear(60, 30),
             nn.Tanh(),
             nn.Linear(30, 15),
