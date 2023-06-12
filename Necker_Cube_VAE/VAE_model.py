@@ -37,8 +37,8 @@ class VariationalAutoencoder(nn.Module):
             nn.Linear(15, 10),
             nn.Tanh()
         )
-        self.z_mu = nn.Linear(10, 10)
-        self.z_sigma = nn.Linear(10, 10)
+        #self.z_mu = nn.Linear(10, 10)
+        #self.z_sigma = nn.Linear(10, 10)
 
         self.decoder = nn.Sequential(
             nn.Linear(10, 15),
@@ -52,15 +52,15 @@ class VariationalAutoencoder(nn.Module):
 
     def forward(self, x, mode="training"):
         encoded = self.encoder(x)
-        z_mu = self.z_mu(encoded)
-        z_sigma = self.z_sigma(encoded)
-        epsilon = torch.randn_like(z_sigma) * 0
+        #z_mu = self.z_mu(encoded)
+        #z_sigma = self.z_sigma(encoded)
+        #epsilon = torch.randn_like(z_sigma) * 0
 
-        if mode == "training":
-            z = z_mu + z_sigma * epsilon
-        elif mode == "testing":
-            z = self.z_mu(encoded)
+        #if mode == "training":
+        #    z = z_mu + z_sigma * epsilon
+        #elif mode == "testing":
+        #    z = self.z_mu(encoded)
 
-        decoded = self.decoder(z)
+        decoded = self.decoder(encoded) # z
 
-        return decoded, z_mu, z_sigma
+        return decoded #, z_mu, z_sigma

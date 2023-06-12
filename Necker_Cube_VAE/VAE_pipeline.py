@@ -298,10 +298,8 @@ def save_images(cube, reconstruction, target, path, has_vis_marker, mode=None):
     s4.blit(s1, (0, 0))
     s4.blit(s2, (WIDTH, 0))
     s4.blit(s3, (2*WIDTH,0))
-    #s4.blit(s4, (3 * WIDTH, 0))
     pygame.draw.line(s4, BLACK, (WIDTH, 0), (WIDTH, HEIGHT))
     pygame.draw.line(s4, BLACK, (2 * WIDTH, 0), (2 * WIDTH, HEIGHT))
-    #pygame.draw.line(s4, BLACK, (3 * WIDTH, 0), (3 * WIDTH, HEIGHT))
 
     if mode == "rec_only":
         pygame.image.save(s2, path)
