@@ -461,14 +461,14 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 500 #1500
-    train_batch_size = 100 # 40
-    validation_batch_size = 100
+    n_epochs = 1500 #1500
+    train_batch_size = 40 # 40
+    validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
-    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/small_data.txt'  # data used for training (model input)
-    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/small_target.txt'  # can be None     # data used for training (desired model output)
+    datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_data.txt'  # data used for training (model input)
+    targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/training_target.txt'  # can be None     # data used for training (desired model output)
 
     test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_data.txt'  # data used to see how the model performs on that data after certain training epochs
     test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'

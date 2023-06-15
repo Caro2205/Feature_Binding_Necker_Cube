@@ -63,4 +63,4 @@ class VariationalAutoencoder(nn.Module):
 
         decoded = self.decoder(encoded) # z
 
-        return decoded #, z_mu, z_sigma
+        return decoded, torch.tensor(0), torch.tensor(0)
