@@ -24,7 +24,8 @@ Model can be used with input size of 8*4 or 8*3, depending whether input corners
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size=24):
+        self.input_size = input_size
         super().__init__()
 
         self.encoder = nn.Sequential(

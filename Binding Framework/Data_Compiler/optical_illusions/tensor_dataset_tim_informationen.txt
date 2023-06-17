@@ -1,0 +1,1 @@
+tensor_dataset_tim.pt -> Jeweils 100 vollständige Würdel von Variante 1 und Variante 2 (immer die gleichen Würfel)

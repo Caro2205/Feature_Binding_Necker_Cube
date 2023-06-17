@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
-#sys.path.append(
-#    'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/BindingAndPerspectiveTaking')
-# os.chdir('C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/BindingAndPerspectiveTaking')
+sys.path.append(
+    'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
+os.chdir('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 # Before run: replace ... with current directory path
 
 # class imports 
@@ -27,7 +27,7 @@ from Data_Compiler.data_preparation import Preprocessor
 from BPAT_evaluation import BPAT_evaluator
 
 from VAE_models import VAE_model
-from VAE_models import VAE_model_large
+#from VAE_models import VAE_model_large
 
 
 class BPAT_Inference():

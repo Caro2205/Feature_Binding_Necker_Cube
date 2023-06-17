@@ -9,7 +9,8 @@ from torch import nn
 
 # selber hinzugefuegt
 import sys
-# sys.path.append('C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/BindingAndPerspectiveTaking')
+sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
+os.chdir('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 
 from Testing.testing_module.general_tester import TESTER
 from Testing.testing_module.TESTING_statistical_evaluation_abstract import TEST_STATISTICS
@@ -539,7 +540,10 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
 
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1'
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.2'
-                model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.4'
+
+                model_path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/VAE_models/saved_model_parameters'
+
+                #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.4'
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.8'
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_0'
 

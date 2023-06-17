@@ -6,8 +6,8 @@ import os
 
 import sys
 
-sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Code')
-os.chdir('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Code')
+sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
+os.chdir('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 #sys.path.append('C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly')
 #os.chdir('C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly')
 
