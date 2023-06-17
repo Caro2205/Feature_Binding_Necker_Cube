@@ -461,9 +461,9 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 1500 #1500
-    train_batch_size = 40 # 40
-    validation_batch_size = 40
+    n_epochs = 1000 #1500
+    train_batch_size = 60 # 40
+    validation_batch_size = 60
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
@@ -475,7 +475,7 @@ def main():
 
     # has_vis_marker indicates if the used data has a marker (1 or 0) to indicate whether a corner's
     # coordinate is visible or not visible (-> x, y, z = 0)
-    has_vis_marker = True  # False
+    has_vis_marker = False  # False
     input_size = 8 * 4 if has_vis_marker else 8 * 3
 
     # define model

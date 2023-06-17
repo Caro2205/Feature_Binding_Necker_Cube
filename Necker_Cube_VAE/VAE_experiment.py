@@ -19,7 +19,7 @@ import pygame
 def main():
     # path to model that we want to do the experiment with
     use_whole_rec = False # should the whole reconstruction be used as input or only the values set to 0 at beginning
-    runs = 25
+    runs = 20
 
     path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/run_2023_06_12-14_44_21/'
     has_vis_marker = True
@@ -40,7 +40,7 @@ def main():
     dataloader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch_size)
 
     # create folder to store experiment results and pictures
-    exp_path = path + 'experiment1'
+    exp_path = path + 'experiment'
     os.makedirs(exp_path, exist_ok=True)
     for i in range(5):
         cube_path = os.path.join(exp_path, f'cube{i}')
@@ -61,6 +61,8 @@ def main():
     for n in range(24):
         running_loss = np.zeros(runs)
         x = 0
+        print('Works fine till')
+        print(n)
 
         for corners, coordinates in dataloader.dataset:
             corners_masked = corners.clone()
@@ -93,8 +95,15 @@ def main():
                         reconstructed_vis[j] = reconstruction[k]
                         k += 1
 
-                if use_whole_rec: corners_masked = reconstructed_vis
-                else: corners_masked[mask] = reconstructed_vis[mask]
+                if use_whole_rec:
+                    corners_masked = reconstructed_vis
+                else:
+                    updated_corners_masked = corners_masked.clone()
+                    updated_corners_masked[mask] = reconstructed_vis[mask]
+                    corners_masked = updated_corners_masked
+                    #mask_tensor = torch.tensor(mask)
+                    #corners_masked.scatter_(dim=0, index=mask_tensor, src=reconstructed_vis[mask])
+                    # #corners_masked[mask] = reconstructed_vis[mask]
 
             x += 1
 
