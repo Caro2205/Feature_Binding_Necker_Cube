@@ -232,7 +232,6 @@ class BINDER_NxM():
     #########################################################################################
 
     def temperatured_softmax(self, bm, t, dimint):
-        x = bm*t
         return nn.functional.softmax(bm*t, dim=dimint)
 
 
@@ -357,7 +356,7 @@ class BINDER_NxM():
 
     def decr_temp_col_linear(self):
         if self.temp_val_col < 5:   #< 5:
-            self.temp_val_col += 0.02 #0.0051 #0.02
+            self.temp_val_col += 0.005 #0.0051 #0.02
             print("Temp_val_col has been linearly decreased to:")
             print(self.temp_val_col)
 

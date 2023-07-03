@@ -9,10 +9,6 @@ import os
 
 
 from Testing.testing_module.TESTING_procedure_abstract import TEST_PROCEDURE
-from BPAT_subclass_parallel import BPAT_PARALLEL
-from BPAT_subclass_sequential import BPAT_SEQUENTIAL
-from BPAT_subclass_parallel_tempTurnUp import BPAT_PARALLEL_TEMPTURNUP
-from BPAT_subclass_parallel_tempTurnUp_BMforce import BPAT_PARALLEL_TEMPTURNUP_BM_FORCE
 from Control_BPAT_NeckerCubeStatic import Control_BPAT_NeckerCubeStatic
 
 #from TESTING_procedure_abstract import TEST_PROCEDURE
@@ -77,15 +73,7 @@ class TESTER(TEST_PROCEDURE):
     """
     def set_BPAT_structure(self, structure_type):
         self.structure = structure_type
-        if structure_type == 'sequential':
-            self.BPAT = BPAT_SEQUENTIAL()
-        elif structure_type == 'parallel':
-            self.BPAT = BPAT_PARALLEL()
-        elif structure_type == 'parallel_temp_turnup':
-            self.BPAT = BPAT_PARALLEL_TEMPTURNUP()
-        elif structure_type == 'parallel_temp_turnup_BMforce':
-            self.BPAT = BPAT_PARALLEL_TEMPTURNUP_BM_FORCE()
-        elif structure_type == 'necker_cube_static_bind':
+        if structure_type == 'necker_cube_static_bind':
             self.BPAT = Control_BPAT_NeckerCubeStatic()
         else:
             print('error: No valid structure type! Please check values.')

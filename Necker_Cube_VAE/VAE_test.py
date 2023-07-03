@@ -26,12 +26,12 @@ def save_test_info(folderdir, testdata_size, test_losses, xy_test_losses, z_test
     f.close()
 
 def main():
-    has_vis_marker = False
+    has_vis_marker = True
     input_size = 8 * 4 if has_vis_marker else 8 * 3
     datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/model_testing/'
 
     # set used model here
-    datetime = '06_15-23_38_32'  #'06_06-13_18_12'
+    datetime = '06_26-11_24_55'  #'06_06-13_18_12'
     folderdir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/run_2023_' + datetime + '/'
     model_path = folderdir + '/saved_model_parameters.pt'
     model = VAE_model.VariationalAutoencoder(input_size)

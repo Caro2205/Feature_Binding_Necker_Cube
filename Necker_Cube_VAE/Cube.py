@@ -267,17 +267,17 @@ def main(data_filename = None, target_filename = None):
 
     ###### select what cubes to add to the dataset #################################################################
 
-    data_mode = 'test' #'training'
-    sl_l = 1
-    sl_u = 1
-    n = 1000
-    n_cor = [0]
+    data_mode = 'training' #'training'
+    sl_l = 0.5
+    sl_u = 3
+    n = 4000
+    n_cor = [0, 1, 2, 3, 0, 1, 2, 3]
     g_noise = [0] * len(n_cor)
-    z_mis = [False]
-    r_cor = [True] * len(n_cor)
-    corner_range = [8] * len(n_cor)  # random number of corners to delete from 0 to n-1
-    inp_noise = 0
-    noise_f = 3
+    z_mis = [False, False, False, False, True, True, True, True]
+    r_cor = [False] * len(n_cor)
+    corner_range = [0] * len(n_cor)  # random number of corners to delete from 0 to n-1
+    inp_noise = 0.1
+    noise_f = 2
 
     for i in range(len(n_cor)):
         generate_cubes(n_cubes=n, n_del_corners=n_cor[i], side_len_lower=sl_l, side_len_upper=sl_u, noise=g_noise[i], del_z=z_mis[i],
@@ -365,7 +365,7 @@ def main(data_filename = None, target_filename = None):
     #data_cubes[0].print_cube(scale=300)
 
 if __name__ == "__main__":
-    main(data_filename='experiment_data.txt', target_filename='experiment_target.txt')
+    main(data_filename='training_data.txt', target_filename='training_target.txt')
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])

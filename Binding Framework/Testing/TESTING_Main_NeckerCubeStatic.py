@@ -29,7 +29,7 @@ class TESTING_NeckerCubeStatic_TimGerneBSc(EXPERIMENT_INTERFACE_OPT_ILLUSIONS):
         changed_parameter = 'dimensions'
         tested_values = dimension_values
         distractors = None
-        temperature = 'smooth_turn_down'        # either: fixed, smooth_turn_down, or turn_up
+        temperature = 'turn_up'        # either: fixed, smooth_turn_down, or turn_up
 
         super().perform_experiment(
             sample_nums, 

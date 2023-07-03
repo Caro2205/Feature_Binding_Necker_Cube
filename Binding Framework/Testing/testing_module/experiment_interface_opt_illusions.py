@@ -12,8 +12,8 @@ import sys
 sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 os.chdir('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 
-from Testing.testing_module.general_tester import TESTER
-from Testing.testing_module.TESTING_statistical_evaluation_abstract import TEST_STATISTICS
+from Testing.testing_module.general_tester import TESTER #Testing.testing_module.
+from Testing.testing_module.TESTING_statistical_evaluation_abstract import TEST_STATISTICS #Testing.testing_module.
 
 # from general_tester import TESTER
 # from TESTING_statistical_evaluation_abstract import TEST_STATISTICS
@@ -130,22 +130,28 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
             # temperature_params = (0.05,0.05)             # format: (temp_row, temp_col)
             # temperature_params = (0.1,0.1)             # format: (temp_row, temp_col)
             # temperature_params = (1,1)             # format: (temp_row, temp_col)
-            temperature_params = (3,5)             # format: (temp_row, temp_col)
+            temperature_params = (5,5)             # format: (temp_row, temp_col)
 
         elif temperature == "smooth_turn_down":
-            temp_max = ((80,3.0),(80, 3.0))  #((130,1.0),(130, 1.0))
+            temp_max = ((80, 3.0), (80, 3.0))  #((130,1.0),(130, 1.0))
             # ((80,3.0),(80, 3.0)) gibt gute Binding Matrix
+
+            temp_max =((5, 5), (5, 5))
 
             temperature_params = [
                 temp_max
                 ]
 
             # number of frames after which the temperature is turned up:
-            temp_range_col = 1      # columns
-            temp_range_row = 1      # rows
+            #temp_range_col = 1      # columns
+            #temp_range_row = 1      # rows
+
+            temp_range_col = 5
+            temp_range_row = 5
 
             # number of frames after which the temperature is set back to 0: 
-            temp_reset_frame = 200 + tuning_length
+            #temp_reset_frame = 200 + tuning_length
+            temp_reset_frame = 1000
 
         ## If temperature is turned up: 
         elif temperature == 'turn_up': 
@@ -153,32 +159,11 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
             ## Different values for different illusions
             if self.illusion == 'dancer':
                 # maximum temperature:
-                # temp_max = (0.6,0.6)
-                # temp_max = (0.5,0.5)
-                # temp_max = (0.3,0.3)
-                # temp_max = (1,1)
-                # temp_max = (2,2)
-
                 temp_max = (3,5)
-                # temp_max = (3,3)
-                # temp_max = (5,5)
-                # temp_max = (10,10)
 
                 # value by which the temperature is turned up in every step:
                 temp_step_col = 0.05    # column
                 temp_step_row = 0.05    # rows
-
-                # temp_step_col = 0.1    # column
-                # temp_step_row = 0.1    # rows
-
-                # temp_step_col = 0.2    # column
-                # temp_step_row = 0.2    # rows
-
-                # temp_step_col = 0.3    # column
-                # temp_step_row = 0.3    # rows
-
-                # temp_step_col = 0.5    # column
-                # temp_step_row = 0.5    # rows
 
             elif self.illusion == 'necker_cube':
                 # maximum temperature:
@@ -189,9 +174,10 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
                 temp_step_row = 0.1    # rows
 
             elif self.illusion == 'necker_cube_static':
-                temp_max = (3, 5)
-                temp_step_col = 0.05  # column
-                temp_step_row = 0.05  # rows
+                temp_max = (0, 0)
+                # set temerature adjustment here
+                temp_step_col = 0  # column
+                temp_step_row = 0  # rows
             else:
                 print('ERROR: Invalid illusion! ')
                 exit()
@@ -201,21 +187,22 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
             temp_grad_range_row = 100
 
             # number of frames after which the temperature is turned up:
-            # temp_range_col = 1      # columns
-            # temp_range_row = 1      # rows
+            #temp_range_col = 1      # columns
+            #temp_range_row = 1      # rows
 
             temp_range_col = 5      # columns
             temp_range_row = 5      # rows
 
-            # temp_range_col = 10      # columns
-            # temp_range_row = 10      # rows
+            #temp_range_col = 10      # columns
+            #temp_range_row = 10      # rows
             
             # function to determine values of temperature:
             temp_fct = 'linear'                     # either: 'sigmoid' or 'linear'
             temp_fct_relative = 'lpfilter_deriv'    # either: 'lpfilter_deriv', 'mean' or 'sum_of_abs_diff'
 
             # number of frames after which the temperature is set back to 0: 
-            temp_reset_frame = 210         
+            #temp_reset_frame = 210
+            temp_reset_frame = 1000
             # temp_reset_frame = 250         
             # temp_reset_frame = 1000000         
 

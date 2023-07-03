@@ -291,7 +291,7 @@ def save_images(cube, reconstruction, target, path, has_vis_marker, mode=None):
     s3.fill(WHITE)
     s4.fill(WHITE)
 
-    draw_cube(cube, 100, 4, s1, has_vis_marker)
+    draw_cube(cube, 100, 4, s1, has_vis_marker=True)
     draw_cube(reconstruction, 100, 4, s2, has_vis_marker=False)
     draw_cube(target, 100, 4, s3, has_vis_marker=False)
 
@@ -461,9 +461,9 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 1000 #1500
-    train_batch_size = 60 # 40
-    validation_batch_size = 60
+    n_epochs = 2000 #1500
+    train_batch_size = 40 # 40
+    validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
 
     # Paths for datasets
@@ -475,7 +475,7 @@ def main():
 
     # has_vis_marker indicates if the used data has a marker (1 or 0) to indicate whether a corner's
     # coordinate is visible or not visible (-> x, y, z = 0)
-    has_vis_marker = False  # False
+    has_vis_marker = True  # False
     input_size = 8 * 4 if has_vis_marker else 8 * 3
 
     # define model

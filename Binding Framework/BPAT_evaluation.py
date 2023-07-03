@@ -373,8 +373,8 @@ class BPAT_evaluator():
 
 def main():
 
-    num_obs = 15
-    num_feat = 15
+    num_obs = 8
+    num_feat = 8
     
     # num_obs = 17
     # num_feat = 16

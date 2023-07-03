@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import sys
-sys.path.append('...')      
+sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 # Before run: replace ... with current directory path
 
 class TEST_STATISTICS(): 
@@ -117,8 +117,8 @@ class TEST_STATISTICS():
 
 def main(): 
     # set the following parameters
-    num_observations = 15
-    num_input_features = 15
+    num_observations = 8
+    num_input_features = 8
     num_dimensions = 3
     stats = TEST_STATISTICS(num_input_features, num_observations, num_dimensions)
 

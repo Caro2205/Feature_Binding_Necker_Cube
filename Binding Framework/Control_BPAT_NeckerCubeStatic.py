@@ -16,14 +16,14 @@ import sys
 import os
 import csv
 
-sys.path.append('C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly')
+sys.path.append('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework')
 # Before run: replace ... with current directory path
 
 # class imports
 from BPAT_Inference import BPAT_Inference
 
 # eigener Import
-from Testing.testing_module.TESTING_procedure_abstract import TEST_PROCEDURE
+#from Testing.testing_module.TESTING_procedure_abstract import TEST_PROCEDURE
 
 
 class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
@@ -97,36 +97,6 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
         super().__init__()
 
-    def exchange_coord(self, obs, exc_vals):
-        obs = self.preprocessor.convert_data_VAE_to_AT(obs)        # reformatiert input
-        obs_t = torch.transpose(obs, 0, 1)      # -> 3 tensoren: x, y, z-werte
-
-        if self.num_input_dimensions == 3:
-            index = torch.tensor([self.pred_dim]).to(self.device)
-            obs_d = obs_t.index_copy(0, index, exc_vals.unsqueeze(0))
-        elif self.num_input_dimensions == 6:
-            index = torch.tensor([self.pred_dim, self.pred_dim + 3]).to(self.device)
-            obs_d = obs_t.index_copy(0, index, exc_vals)
-        else:
-            print('ERROR: Inference of coordinates only defined for 3 or 6 input dimensions.')
-
-        obs_d = torch.transpose(obs_d, 0, 1)
-        return self.preprocessor.convert_data_AT_to_VAE(obs_d)
-
-    # def set_pred_dim(self, pred_bool):
-    #     self.pred_z = pred_bool
-
-    def update_dimension_values(self):
-        upd_d = []
-
-        for i in range(self.tuning_length + 1):
-            mom = self.d_momentum * self.bin_momentum_dimension[i]
-            upd = - self.dim_learning_rate * self.D_grads[i] + mom
-
-            self.bin_momentum_dimension[i] = upd
-            upd_d.append(self.Ds[i] + upd)
-
-        return upd_d
 
     def extract_z(self, pred):
         pred_rs = torch.transpose(
@@ -138,26 +108,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         else:
             return torch.cat([pred_rs[self.pred_dim].unsqueeze(0), pred_rs[self.pred_dim + 3].unsqueeze(0)])
 
-        # if self.num_input_dimensions==3:
-        #     return torch.Tensor([pred_rs[self.pred_dim].numpy()])
-        # else:
-        #     return torch.Tensor([pred_rs[self.pred_dim].numpy(), pred_rs[self.pred_dim+3].numpy()])
-        # CPU
 
-    def set_z_contra_attractor(self, z_coord, obs):
-
-        if self.num_input_dimensions == 3:
-            pred_dim_indx = [self.pred_dim]
-        else:
-            pred_dim_indx = [self.pred_dim, self.pred_dim + 3]
-
-        # shape z_coord: [2, num_features]
-        # shape obs:       [num_features, num_dimensions]
-
-        for cf, af in zip(self.contra_feature, self.attractor_feature):
-            z_coord[cf] = -obs[af, pred_dim_indx]
-
-        return z_coord
 
     ############################################################################
     ##########  INFERENCE  #####################################################
@@ -285,7 +236,6 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         initial_matrix.savefig(result_path + "initial_binding_matrix_neuron_act.png")
 
 
-
         o1_flat =  self.preprocessor.convert_data_AT_to_VAE(o1)
         test = self.core_model.forward(o1_flat.float(), "testing")
         print(self.preprocessor.convert_data_VAE_to_AT(test))
@@ -298,6 +248,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             noise_cyles.append(i)
 #########################################################################################################################
         for cycle in range(self.tuning_cycles):  # es wird dann immer der gleiche Würfel verwendet
+
             ### wechsel des input cubes:
             if cycle < reset_frame:
                 o = o1_without_z
@@ -307,6 +258,21 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 o = o2_without_z
                 o_target = o1
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+
+            # calculate and print ORE (optimal reconstruction error)
+            if cycle == 0:
+                ideal_binding_matrix = self.ideal_binding
+                # o_target
+                ore_x, useless_bm = self.perform_bpt_binding_only(True, idx=0, obs=o_target, bm=ideal_binding_matrix)
+                ore_pred = self.core_model.forward(ore_x, "testing")
+                ore_pred_masked = torch.clone(ore_pred)
+                o_target_flat_masked = torch.clone(o_target_flat)
+               # for i in range(2, ore_pred_masked.size(dim=1), 3):
+                #    ore_pred_masked[0][i] = 0
+                #    o_target_flat_masked[0][i] = 0
+
+                ORE = self.at_loss(ore_pred_masked.float(), o_target_flat_masked.float())
+                print('Optimal Reconstruction Error: ' +str(ORE))
 
 
             ######## set z-coordiantes of observation to predicted z-coordintates of last cycle ########
@@ -476,17 +442,12 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             final_prediction = upd_prediction
             final_input = x.clone().detach().to(self.device)
             final_opt_input = opt_z_x.detach().to(self.device)
-            # final_prediction = self.at_predictions[0].clone().detach().to(self.device)
-            # final_input = x.clone().detach().to(self.device)
 
-            self.intersave_matrices(bm, self.Bs[0], self.obs_count - self.tuning_length)
+            #self.intersave_matrices(bm, self.Bs[0], self.obs_count - self.tuning_length)
 
         ## Generate updated prediction
-        # state = self.at_states[-1]
-        # state = (state[0] * state_scaler, state[1] * state_scaler)
-        # new_prediction, state = self.core_model(x, state)
         new_prediction = self.core_model(x, "testing")
-        z_coord = self.extract_z(new_prediction)
+        #z_coord = self.extract_z(new_prediction)
 
         ## Reorganize storage variables
         # observations
