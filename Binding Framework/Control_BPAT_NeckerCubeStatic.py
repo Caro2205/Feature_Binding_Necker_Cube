@@ -180,11 +180,23 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         #### Resetting Binding Matrix and Cube Constellation.
         reset_frame = 1000 #500
 
+        #######################################################################
+        #### create observations without visibility markers, vis markers are only used in model
+
+        #obs_vis = observations.clone()
+        #observations[0] = np.delete(observations[0], list(range(3, observations[0].shape[1], 4)), axis=1)
+        #observations[1] = np.delete(observations[1], list(range(3, observations[1].shape[1], 4)), axis=1)
+        #print(observations)
+
+
         ###############################################################################################
         ############ Setting Cube Observations ########################################################
         ###############################################################################################
         o1 = observations[0]   # NC Variante 1
-        o2 = observations[151]  # NC Variante 2
+        o2 = observations[1]  # NC Variante 2
+
+        print(observations)
+        print(o1)
 
         o1_without_z = torch.clone(o1)
         o2_without_z = torch.clone(o2)
@@ -286,7 +298,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     o[i][2] = prev_predicted_z
 
                     # add noise to observation
-                    if False: # changed noise adding here
+                    if True: # changed noise adding here
                         o[i][0] += np.random.normal(0, 1) * 0.01
                         o[i][1] += np.random.normal(0, 1) * 0.01
 
