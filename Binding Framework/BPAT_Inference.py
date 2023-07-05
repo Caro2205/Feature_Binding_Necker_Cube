@@ -27,6 +27,7 @@ from Data_Compiler.data_preparation import Preprocessor
 from BPAT_evaluation import BPAT_evaluator
 
 from VAE_models import VAE_model
+from VAE_models import VAE_model_residuals
 #from VAE_models import VAE_model_large
 
 
@@ -286,28 +287,12 @@ class BPAT_Inference():
         print('Parameters set.')
 
     def init_model_(self, model_path, layer_norm):
-        # # Load LSTM model
-        # self.core_model_path = model_path
-        # print(f'Load model from {model_path}')
-        # if self.oi:
-        #     self.core_model = CORE_NET(
-        #         input_size=self.num_input_dimensions*self.num_input_features,
-        #         hidden_layer_size=self.lstm_num_hidden_oi,
-        #         layer_norm=layer_norm)
-        # else:
-        #     self.core_model = CORE_NET(
-        #         input_size=self.num_input_dimensions*self.num_input_features,
-        #         hidden_layer_size=self.lstm_num_hidden)
-        #
-        # self.core_model.load_state_dict(torch.load(model_path, map_location=self.device))
-        # self.core_model.eval()
-        # self.core_model.to(self.device)
 
         # eigene Modelle
-        # erstes modell auf allen 4 varianten trainiert:
         self.core_model_path = model_path
 
         self.core_model = VAE_model.VariationalAutoencoder()
+        #self.core_model = VAE_model_residuals.VariationalAutoencoder()
         #self.core_model = VAE_model_large.VariationalAutoencoder()
 
         self.core_model.load_state_dict(torch.load(model_path))

@@ -145,6 +145,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         print("Running NeckerCubeStatic Binding only........................")
         print("#############################################################")
 
+        print('Shape of observations:')
         print(observations.shape)
 
         self.at_final_pred_errors_z = torch.tensor([]).to(self.device)
@@ -243,36 +244,39 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
         rec_losses = []
         fbe = []
-        noise_cyles = list(range(0, 400))
-        for i in (range(reset_frame, reset_frame+400)):
-            noise_cyles.append(i)
+        #noise_cyles = list(range(0, 400))
+        #for i in (range(reset_frame, reset_frame+400)):
+        #    noise_cyles.append(i)
 #########################################################################################################################
         for cycle in range(self.tuning_cycles):  # es wird dann immer der gleiche Würfel verwendet
 
             ### wechsel des input cubes:
             if cycle < reset_frame:
                 o = o1_without_z
+                #o = o1
                 o_target = o1
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
             elif cycle >= reset_frame:
                 o = o2_without_z
+                #o = o2
                 o_target = o1
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
 
             # calculate and print ORE (optimal reconstruction error)
             if cycle == 0:
                 ideal_binding_matrix = self.ideal_binding
-                # o_target
                 ore_x, useless_bm = self.perform_bpt_binding_only(True, idx=0, obs=o_target, bm=ideal_binding_matrix)
                 ore_pred = self.core_model.forward(ore_x, "testing")
                 ore_pred_masked = torch.clone(ore_pred)
                 o_target_flat_masked = torch.clone(o_target_flat)
-               # for i in range(2, ore_pred_masked.size(dim=1), 3):
-                #    ore_pred_masked[0][i] = 0
-                #    o_target_flat_masked[0][i] = 0
+                for i in range(2, ore_pred_masked.size(dim=1), 3):
+                    ore_pred_masked[0][i] = 0
+                    o_target_flat_masked[0][i] = 0
 
-                ORE = self.at_loss(ore_pred_masked.float(), o_target_flat_masked.float())
-                print('Optimal Reconstruction Error: ' +str(ORE))
+                ORE = self.at_loss(ore_pred.float(), o_target_flat.float())
+                print('Optimal Reconstruction Error: ' + str(ORE))
+                ORE_masked = self.at_loss(ore_pred_masked.float(), o_target_flat_masked.float())
+                print('Optimal Reconstruction Error without z: ' + str(ORE_masked))
 
 
             ######## set z-coordiantes of observation to predicted z-coordintates of last cycle ########
@@ -282,7 +286,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     o[i][2] = prev_predicted_z
 
                     # add noise to observation
-                    if True:
+                    if False: # changed noise adding here
                         o[i][0] += np.random.normal(0, 1) * 0.01
                         o[i][1] += np.random.normal(0, 1) * 0.01
 

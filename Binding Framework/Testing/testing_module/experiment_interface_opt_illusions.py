@@ -437,92 +437,9 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
 
             ### Core model processing #############################################################
             layerNorm = False
-            model_path = f'CoreLSTM/models/optical_illusions/{self.illusion}/'
-            if self.illusion == 'dancer':
-                # self.BPAT.set_hidden_num_oi(200)
-                self.BPAT.set_hidden_num_oi(300)
-                # self.BPAT.set_hidden_num_oi(120)
-                # self.BPAT.set_hidden_num_oi(100)
+            #model_path = f'CoreLSTM/models/optical_illusions/{self.illusion}/'
 
-                if self.num_dimensions == 3:
-                    # model_path += 'mod_3_15_100_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005'
-                    # model_path += 'mod_3_15_100_MSELoss()_0.001_0.99_0.0_15_400_nseNone_mirrored'
-                    # model_path += 'mod_3_15_110_MSELoss()_0.001_0.99_0.0_15_500_nse0.0001_mirrored'
-
-                    # model_path += 'mod_3_15_120_MSELoss()_0.001_(0.3, 0.4)_0.18_10_100_lNORM_mirrturn20'
-                    # model_path += 'mod_3_15_120_MSELoss()_0.001_(0.3, 0.4)_0.18_5_100_lNORM_mirrturn35'
-
-                    # model_path += 'mod_testing3_15_200_MSELoss()_0.01_(0.9, 0.999)_0.0_10_300_lNORM_mirrturn35'
-                    # model_path += 'mod_testing3_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_400_mirrturn35'
-                    # model_path += 'mod_testing_flatback3_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_400_mirrturn35'
-                    # model_path += 'mod_testing3_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_mirrturn35'
-
-                    model_path += 'mod_3_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_mirrturn35asarattr_sep'
-
-
-                elif self.num_dimensions == 6:
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_300_mirrturn35asar180testing'
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_mirrturn35asar180attr_septesting'
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_nse0.0001_mirrturn35asarattr_septesting'
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_nse0.0001_mirrturn35_reat2asarattr_sep'
-
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_400_nse0.0001_mirrturn35asar'
-                    # model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_nse0.0001_mirrturn35asar_2'
-                    # model_path += 'mod_6_15_200_MSELoss()_0.01_(0.9, 0.999)_0.0_20_400_nse0.0001_mirrturn35asar'
-                    # model_path += 'mod_6_15_200_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_nse0.0001_mirrturn35asar_2'
-                    # model_path += 'mod_6_15_200_MSELoss()_0.01_(0.9, 0.999)_0.0_20_500_nse0.0001_mirrturn35asar'
-
-                    ## velocity: t - t-1
-                    model_path += 'mod_6_15_300_MSELoss()_0.01_(0.9, 0.999)_0.0_20_400_nse0.0001_mirrturn35asardifvel'
-
-                elif self.num_dimensions == 7:
-                    model_path += 'mod_7_15_100_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005'
-                else:
-                    print('ERROR: Unvalid number of dimensions!\nPlease use 3, 6, or 7.')
-                    exit()
-
-            elif self.illusion == 'necker_cube':
-                self.BPAT.set_hidden_num_oi(150)
-                if self.num_dimensions == 7:
-                    if self.edge_points == 0:
-                        model_path += ...
-                    elif self.edge_points == 1:
-                        model_path += 'mod_7_20_100_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep1'
-                    elif self.edge_points == 3:
-                        model_path += ...
-                    else:
-                        print('ERROR: No model for given number of edge points.')
-                elif self.num_dimensions == 6:
-                    if self.edge_points == 0:
-                        model_path += 'mod_6_8_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep0_bothdir'
-                        # model_path += 'mod_6_8_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep0_bothdir'
-                    elif self.edge_points == 1:
-                        # model_path += 'mod_6_20_100_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep1'
-                        model_path += 'mod_6_20_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep1_bothdir'
-                        # model_path += 'mod_6_20_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep1_bothdir'
-                    elif self.edge_points == 3  :
-                        model_path += 'mod_6_44_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep3_bothdir'
-                        # model_path += 'mod_6_44_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep3_bothdir'
-                    else:
-                        print('ERROR: No model for given number of edge points.')
-                elif self.num_dimensions == 3:
-                    if self.edge_points == 0:
-                        model_path += 'mod_3_8_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep0_bothdir'
-                        # model_path += 'mod_3_8_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep0_bothdir'
-                    elif self.edge_points == 1:
-                        # model_path += 'mod_3_20_100_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep1'
-                        model_path += 'mod_3_20_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep1_bothdir'
-                        # model_path += 'mod_3_20_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep1_bothdir'
-                    elif self.edge_points == 3:
-                        model_path += 'mod_3_44_150_MSELoss()_0.001_0.95_0.0_10_150_nse0.0005_ep3_bothdir'
-                        # model_path += 'mod_3_44_200_MSELoss()_0.01_0.9_0.0_10_100_nse0.0005_ep3_bothdir'
-                    else:
-                        print('ERROR: No model for given number of edge points.')
-                else:
-                    print('ERROR: Unvalid number of dimensions!\nPlease use 3, 6, or 7.')
-                    exit()
-
-            elif self.illusion == "necker_cube_static":
+            if self.illusion == "necker_cube_static":
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters'
 
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1'
@@ -530,19 +447,12 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
 
                 model_path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/VAE_models/saved_model_parameters'
 
-                #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.4'
-                #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.8'
-                #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_0'
-
-
-               # model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_3_dataset_1'
-                #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_3_dataset_3'
 
 
 
 
             else:
-                print('ERROR: Invalid illusion! ')
+                print('ERROR: Invalid illusion! You threw out dancer etc as illusions and now the model_path cannot be set')
                 exit()
 
             model_path += '.pt'

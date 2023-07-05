@@ -461,7 +461,7 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 2000 #1500
+    n_epochs = 1500 #1500
     train_batch_size = 40 # 40
     validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
@@ -473,9 +473,14 @@ def main():
     test_datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_data.txt'  # data used to see how the model performs on that data after certain training epochs
     test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'
 
+    # if AE is trained with another dataset, read in previous model parameters
+    #pretrained_model_path = "C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/test_run/saved_model_parameters.pt"
+    #pretrained_vae_state_dict = torch.load(pretrained_model_path)
+
+
     # has_vis_marker indicates if the used data has a marker (1 or 0) to indicate whether a corner's
     # coordinate is visible or not visible (-> x, y, z = 0)
-    has_vis_marker = True  # False
+    has_vis_marker = True # False
     input_size = 8 * 4 if has_vis_marker else 8 * 3
 
     # define model
@@ -483,7 +488,10 @@ def main():
 
     #model = VAE_model_small.VariationalAutoencoder(input_size=input_size)
     model = VAE.VariationalAutoencoder(input_size=input_size)         # normal
-    #model = VAE_large.VariationalAutoencoder(input_size=input_size)
+
+    # load pretrained model to initialization
+    #model.load_state_dict(pretrained_vae_state_dict)
+
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)

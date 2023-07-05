@@ -355,18 +355,19 @@ class BINDER_NxM():
             print(self.temp_val_col)
 
     def decr_temp_col_linear(self):
-        if self.temp_val_col < 5:   #< 5:
+        if self.temp_val_col < 3:   #< 5:
             self.temp_val_col += 0.005 #0.0051 #0.02
             print("Temp_val_col has been linearly decreased to:")
             print(self.temp_val_col)
 
     def decr_temp_row_linear(self):
-        if self.temp_val_row < 5:#< 5:
-            self.temp_val_row += 0.02
+        if self.temp_val_row < 3:#< 5:
+            self.temp_val_row += 0.005
 
             #0.0051 #0.02
             print("Temp_val_row has been linearly decreased to:")
             print(self.temp_val_row)
+
 
 
     def incr_temp_row(self):
