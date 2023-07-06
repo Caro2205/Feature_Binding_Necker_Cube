@@ -109,6 +109,17 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             return torch.cat([pred_rs[self.pred_dim].unsqueeze(0), pred_rs[self.pred_dim + 3].unsqueeze(0)])
 
 
+    def add_vis_marker(self, x):
+        result = torch.empty(1,32)
+        k = 0
+        for j in range(32):
+            if (j + 1) % 4 == 0:
+                result[0, j] = 1
+            else:
+                result[0, j] = x[0, k]
+                k += 1
+
+        return result
 
     ############################################################################
     ##########  INFERENCE  #####################################################
@@ -183,10 +194,14 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         #######################################################################
         #### create observations without visibility markers, vis markers are only used in model
 
-        #obs_vis = observations.clone()
+        observations_vis = observations.clone()
+        #o1_vis = observations_vis[0]
+        #o2_vis = observations_vis[1]
+        print(observations)
+        observations = np.delete(observations, -1, axis=2)
         #observations[0] = np.delete(observations[0], list(range(3, observations[0].shape[1], 4)), axis=1)
         #observations[1] = np.delete(observations[1], list(range(3, observations[1].shape[1], 4)), axis=1)
-        #print(observations)
+        print(observations)
 
 
         ###############################################################################################
@@ -249,10 +264,10 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         initial_matrix.savefig(result_path + "initial_binding_matrix_neuron_act.png")
 
 
-        o1_flat =  self.preprocessor.convert_data_AT_to_VAE(o1)
-        test = self.core_model.forward(o1_flat.float(), "testing")
-        print(self.preprocessor.convert_data_VAE_to_AT(test))
-        print(o1)
+        #o1_flat =  self.preprocessor.convert_data_AT_to_VAE(o1)
+        #test = self.core_model.forward(o1_flat.float(), "testing")
+        #print(self.preprocessor.convert_data_VAE_to_AT(test))
+        ##print(o1)
 
         rec_losses = []
         fbe = []
@@ -278,7 +293,13 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             if cycle == 0:
                 ideal_binding_matrix = self.ideal_binding
                 ore_x, useless_bm = self.perform_bpt_binding_only(True, idx=0, obs=o_target, bm=ideal_binding_matrix)
-                ore_pred = self.core_model.forward(ore_x, "testing")
+                print(type(ore_x))
+                print(ore_x)
+                print(ore_x.shape)
+                ore_x_vis = self.add_vis_marker(ore_x)
+                print(type(ore_x_vis))
+                print(ore_x_vis)
+                ore_pred = self.core_model.forward(ore_x_vis, "testing")
                 ore_pred_masked = torch.clone(ore_pred)
                 o_target_flat_masked = torch.clone(o_target_flat)
                 for i in range(2, ore_pred_masked.size(dim=1), 3):
@@ -309,8 +330,10 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             #########################################################################################
             x, bm = self.perform_bpt_binding_only(do_binding, idx=0, obs=o)
 
+            x_vis = self.add_vis_marker(x)
             #########################################################################################
-            upd_prediction = self.core_model.forward(x, "testing")
+            upd_prediction = self.core_model.forward(x_vis, "testing")
+            #upd_prediction = upd_prediction.squeeze()
 
 #            print("Input to Binding:")
 #            print(o)
@@ -462,7 +485,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             #self.intersave_matrices(bm, self.Bs[0], self.obs_count - self.tuning_length)
 
         ## Generate updated prediction
-        new_prediction = self.core_model(x, "testing")
+        new_prediction = self.core_model(x_vis, "testing")
         #z_coord = self.extract_z(new_prediction)
 
         ## Reorganize storage variables

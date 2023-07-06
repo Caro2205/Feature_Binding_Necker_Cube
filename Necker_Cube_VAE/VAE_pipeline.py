@@ -474,7 +474,7 @@ def main():
     test_targetpath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/test_target.txt'  #'./training_data/testing_target.txt'
 
     # if AE is trained with another dataset, read in previous model parameters
-    #pretrained_model_path = "C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/test_run/saved_model_parameters.pt"
+    #pretrained_model_path = "C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/test_run/saved_model_parameters_24.pt"
     #pretrained_vae_state_dict = torch.load(pretrained_model_path)
 
 
@@ -580,7 +580,7 @@ def main():
     #save_loss_plot(z_validation_losses, 'Reconstruction RSME of z-coordinates of validation data', 'Iterations', 'Loss', folderdir + 'z_validation_losses', n_epochs)
 
     # saving model parameters
-    model_name = folderdir + "saved_model_parameters.pt"
+    model_name = folderdir + "saved_model_parameters_24.pt"
     torch.save(model.state_dict(), model_name)
 
 ############## training and validation are completed ##############

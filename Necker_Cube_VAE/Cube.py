@@ -369,15 +369,18 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
             cube1.rotate_y(rot_y)
             cube1.rotate_z(rot_z)
             input_cubes.append(cube1)
+            cube1.print_cube(scale=300)
 
             cube2 = Cube((0, 0, 0), 1, visibility)
             cube2.rotate_x(-rot_x)
             cube2.rotate_y(-rot_y)
             cube2.rotate_z(rot_z)
             input_cubes.append(cube2)
+            cube2.print_cube(scale=300)
 
 
-        generate_cubes_input_framework(92, 56, 5)
+        # change rotation and filename here
+        generate_cubes_input_framework(71, 63, 4)
         filename = 'input_cubes_framework'
 
         path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename + '.txt'
@@ -398,7 +401,7 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
             for cube in input_cubes:
                 cube_tensor = torch.tensor([])
                 for [x, y, z, vis] in cube.corners:
-                    corner = torch.tensor([round(x, 5), round(y, 5), round(z, 5)]) # , round(vis, 5)
+                    corner = torch.tensor([round(x, 5), round(y, 5), round(z, 5), round(vis, 5)]) # , round(vis, 5)
                     cube_tensor = torch.cat((cube_tensor, corner.unsqueeze(0)), dim=0)
                 corners_tensor = torch.cat((corners_tensor, cube_tensor.unsqueeze(0)), dim=0)
             print(corners_tensor.shape)

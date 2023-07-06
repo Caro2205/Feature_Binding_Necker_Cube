@@ -26,7 +26,7 @@ def main():
     input_size = 8 * 4 if has_vis_marker else 8 * 3
 
     # get trained model
-    model_path = path + 'saved_model_parameters.pt'
+    model_path = path + 'saved_model_parameters_24.pt'
     model = VAE_model.VariationalAutoencoder(input_size)
     model.load_state_dict(torch.load(model_path))
     model.eval()

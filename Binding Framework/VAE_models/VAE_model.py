@@ -24,31 +24,29 @@ Model can be used with input size of 8*4 or 8*3, depending whether input corners
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(self, input_size=24):
+    def __init__(self, input_size=32):
         self.input_size = input_size
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(input_size, 60),  # input layer
-            nn.Tanh(),  # nn.ReLU()
-            nn.Linear(60, 30),
+            nn.Linear(input_size, 30),  # input layer
             nn.Tanh(),
             nn.Linear(30, 15),
             nn.Tanh(),
             nn.Linear(15, 10),
             nn.Tanh()
         )
-        #self.z_mu = nn.Linear(10, 10)
-        #self.z_sigma = nn.Linear(10, 10)
+
+        self.residual = nn.Sequential(
+            nn.Linear(input_size, 10)
+        )
 
         self.decoder = nn.Sequential(
             nn.Linear(10, 15),
             nn.Tanh(),
             nn.Linear(15, 30),
             nn.Tanh(),
-            nn.Linear(30, 60),
-            nn.Tanh(),
-            nn.Linear(60, 8*3)  # output layer
+            nn.Linear(30, 8 * 3),  # output layer
         )
 
     def forward(self, x, mode="training"):
@@ -62,7 +60,10 @@ class VariationalAutoencoder(nn.Module):
         #elif mode == "testing":
         #    z = self.z_mu(encoded)
 
-        decoded = self.decoder(encoded) # z
+        residual = self.residual(x)
+        encoded = encoded + residual
+
+        decoded = self.decoder(encoded) # z # encoded
 
         return decoded
 

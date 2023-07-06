@@ -33,7 +33,7 @@ def main():
     # set used model here
     datetime = '06_26-11_24_55'  #'06_06-13_18_12'
     folderdir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/run_2023_' + datetime + '/'
-    model_path = folderdir + '/saved_model_parameters.pt'
+    model_path = folderdir + '/saved_model_parameters_24.pt'
     model = VAE_model.VariationalAutoencoder(input_size)
     model.load_state_dict(torch.load(model_path))
     model.eval()
