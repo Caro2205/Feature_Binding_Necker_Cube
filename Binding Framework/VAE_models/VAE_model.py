@@ -29,24 +29,24 @@ class VariationalAutoencoder(nn.Module):
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(input_size, 30),  # input layer
+            nn.Linear(input_size, 64),  # input layer
             nn.Tanh(),
-            nn.Linear(30, 15),
+            nn.Linear(64, 32),
             nn.Tanh(),
-            nn.Linear(15, 10),
+            nn.Linear(32, 8),
             nn.Tanh()
         )
 
         self.residual = nn.Sequential(
-            nn.Linear(input_size, 10)
+            nn.Linear(input_size, 8)
         )
 
         self.decoder = nn.Sequential(
-            nn.Linear(10, 15),
+            nn.Linear(8, 32),
             nn.Tanh(),
-            nn.Linear(15, 30),
+            nn.Linear(32, 64),
             nn.Tanh(),
-            nn.Linear(30, 8 * 3),  # output layer
+            nn.Linear(64, 8 * 3),  # output layer
         )
 
     def forward(self, x, mode="training"):

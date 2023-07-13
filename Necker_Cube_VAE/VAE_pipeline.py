@@ -76,13 +76,13 @@ def train_model(model, dataloader, n_epochs, criterion, optimizer, outputs, epoc
         running_loss = 0
         running_rec_loss = 0
         for corners, coordinates in dataloader:
-            reconstruction, mu, sigma = model(corners)
+            reconstruction = model(corners)
 
-            kl_divergence = -torch.sum(1 + torch.log(sigma.pow(2)) - mu.pow(2) - sigma.pow(2))
+            #kl_divergence = -torch.sum(1 + torch.log(sigma.pow(2)) - mu.pow(2) - sigma.pow(2))
             # https://sannaperzon.medium.com/paper-summary-variational-autoencoders-with-pytorch-implementation-1b4b23b1763a
             reconstruction_loss = criterion(reconstruction, coordinates) * coordinates.shape[0] * coordinates.shape[1]  # batch_size * n_values for one cube -> = reduction='sum'
             #reconstruction_loss = criterion(reconstruction, coordinates) * coordinates.shape[0] # *batch_size
-            loss = reconstruction_loss + 0.5 * kl_divergence
+            loss = reconstruction_loss #+ 0.5 * kl_divergence
             running_loss += loss.item()
             running_rec_loss += reconstruction_loss.item()
 
@@ -114,7 +114,7 @@ def validate_model(model, dataloader, n_epochs, criterion, validation_outputs, v
     xy_running_loss = 0
     with torch.no_grad():
         for corners, coordinates in dataloader:
-            reconstruction, mu, sigma = model(corners, "testing")
+            reconstruction = model(corners, "testing")
             validation_outputs.append(reconstruction)
 
             MSE = criterion(reconstruction, coordinates)
@@ -365,7 +365,8 @@ def test_model(model, dataloader, criterion):
     #image_path = path + "/test_data_image_reconstructions"
 
     for corners, coordinates in dataloader:
-        reconstruction, mu, sigma = model(corners, mode="testing")
+        print(corners)
+        reconstruction  = model(corners, mode="testing")
 
         MSE = criterion(reconstruction, coordinates)
         root_MSE = torch.sqrt(MSE)
@@ -416,7 +417,7 @@ def save_outputs(model, indices, dataset, imagedir, folderdir, epochs, has_vis_m
 
     for i in indices_sorted:
         cube, target = dataset.__getitem__(i)
-        output, _, _ = model(cube, mode="testing")
+        output= model(cube, mode="testing")
 
         filename = "cube_" + str(i + 1)
         path = imagedir + "epoch_" + str(epochs) + "/" + filename + ".png"
@@ -461,7 +462,7 @@ def main():
     # Hyperparameters
     learning_rate = 1e-4  # 1e-3
     weight_decay = 1e-4  # 1e-4
-    n_epochs = 1500 #1500
+    n_epochs = 2000 #1500
     train_batch_size = 40 # 40
     validation_batch_size = 40
     n_save_outputs = 500 # at every xth epoch, the outputs are saved
@@ -580,7 +581,7 @@ def main():
     #save_loss_plot(z_validation_losses, 'Reconstruction RSME of z-coordinates of validation data', 'Iterations', 'Loss', folderdir + 'z_validation_losses', n_epochs)
 
     # saving model parameters
-    model_name = folderdir + "saved_model_parameters_24.pt"
+    model_name = folderdir + "saved_model_parameters.pt"
     torch.save(model.state_dict(), model_name)
 
 ############## training and validation are completed ##############

@@ -1,4 +1,4 @@
-'''
+''''
 Author: Tim Gerne
 gernetim@gmail.com
 '''
@@ -24,30 +24,46 @@ Model can be used with input size of 8*4 or 8*3, depending whether input corners
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size=32):
+        self.input_size = input_size
         super().__init__()
 
-        hidden_sizes = [30, 15, 10]  # Hidden sizes for each LSTM layer
+        self.encoder = nn.Sequential(
+            nn.Linear(input_size, 64),  # input layer
+            nn.Tanh(),
+            nn.Linear(64, 32),
+            nn.Tanh(),
+            nn.Linear(32, 8),
+            nn.Tanh()
+        )
 
-        self.encoder = nn.LSTM(input_size, hidden_sizes[0], batch_first=True)
-        self.encoder_layers = nn.ModuleList([nn.LSTM(hidden_sizes[i], hidden_sizes[i+1], batch_first=True) for i in range(len(hidden_sizes)-1)])
+        self.residual = nn.Sequential(
+            nn.Linear(input_size, 8)
+        )
 
-        self.decoder = nn.LSTM(hidden_sizes[-1], hidden_sizes[-2], batch_first=True)
-        self.decoder_layers = nn.ModuleList([nn.LSTM(hidden_sizes[i+1], hidden_sizes[i], batch_first=True) for i in range(len(hidden_sizes)-2)])
-
-        self.output_layer = nn.Linear(hidden_sizes[0], 8 * 3)  # Output layer
+        self.decoder = nn.Sequential(
+            nn.Linear(8, 32),
+            nn.Tanh(),
+            nn.Linear(32, 64),
+            nn.Tanh(),
+            nn.Linear(64, 8 * 3),  # output layer
+        )
 
     def forward(self, x, mode="training"):
-        encoded, _ = self.encoder(x)
+        encoded = self.encoder(x)
+        #z_mu = self.z_mu(encoded)
+        #z_sigma = self.z_sigma(encoded)
+        #epsilon = torch.randn_like(z_sigma) * 0
 
-        for layer in self.encoder_layers:
-            encoded, _ = layer(encoded)
+        #if mode == "training":
+        #    z = z_mu + z_sigma * epsilon
+        #elif mode == "testing":
+        #    z = self.z_mu(encoded)
 
-        decoded, _ = self.decoder(encoded)
+        residual = self.residual(x)
+        encoded = encoded + residual
 
-        for layer in self.decoder_layers:
-            decoded, _ = layer(decoded)
+        decoded = self.decoder(encoded) # z # encoded
 
-        decoded = self.output_layer(decoded)
+        return decoded
 
-        return decoded, torch.tensor(0), torch.tensor(0)

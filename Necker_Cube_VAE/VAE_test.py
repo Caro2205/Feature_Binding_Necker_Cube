@@ -31,9 +31,9 @@ def main():
     datapath = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/model_testing/'
 
     # set used model here
-    datetime = '06_26-11_24_55'  #'06_06-13_18_12'
-    folderdir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/run_2023_' + datetime + '/'
-    model_path = folderdir + '/saved_model_parameters_24.pt'
+    foldername = 'best run'  #'run_2023_06_06-13_18_12'
+    folderdir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/model_runs/' + foldername + '/'
+    model_path = folderdir + '/saved_model_parameters.pt'
     model = VAE_model.VariationalAutoencoder(input_size)
     model.load_state_dict(torch.load(model_path))
     model.eval()
@@ -80,7 +80,11 @@ def main():
 
         for i in indices:
             cube, target = test_dataset.__getitem__(i)
-            output, _, _ = model(cube, mode="testing")      # create reconstruction
+            print('cube')
+            print(cube)
+            print('target')
+            print(target)
+            output = model(cube, mode="testing")      # create reconstruction
 
             filename = "cube_" + str(i + 1)
             path = test_imagedir + filename + ".png"

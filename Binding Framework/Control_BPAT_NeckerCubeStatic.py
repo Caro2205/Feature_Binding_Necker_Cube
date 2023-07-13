@@ -11,6 +11,7 @@ import torch
 import copy
 from torch import nn, autograd
 import matplotlib.pyplot as plt
+import pygame
 
 import sys
 import os
@@ -121,6 +122,153 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
         return result
 
+    # needed to save images of cubes (input, reconstruction, target)
+    def check_corners_close(self, corner_list):
+        sorted_corners = np.copy(corner_list)
+        # print(sorted_corners)
+        x = sorted_corners[sorted_corners[:, 2].argsort()]
+        close_corners = x[:4]  # lowest / closest z-coordinates
+        far_corners = x[4:]  # highest / farthest z-coordinates
+
+        return close_corners, far_corners
+
+    def draw_cube(self, corner_list, scale, corner_size, screen, has_vis_marker):
+        BLACK = (0, 0, 0)
+        WHITE = (255, 255, 255)
+        RED = (255, 0, 0)
+        COL_CLOSE = RED
+        COL_FAR = (161, 181, 107)
+        WIDTH = 500
+        HEIGHT = 500
+        CORNER_POS = [WIDTH / 2, HEIGHT / 2]
+
+        HID_COORD = 0
+        close_corners, far_corners = self.check_corners_close(corner_list)
+
+        # parallel to x-axis
+        for i in (0, 2, 4, 6):
+            adj_corner = 1
+            # if not has_vis_marker or (corner_list[i][3] == 1 and corner_list[i + 4][3] == 1):
+            if not (corner_list[i][0] == corner_list[i][1] == corner_list[i][2] == HID_COORD) and \
+                    not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] ==
+                         corner_list[i + adj_corner][
+                             2] == HID_COORD):
+                col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
+                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                                               corner_list[i][1] * scale + CORNER_POS[1]),
+                                 (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
+                                  corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
+
+        # parallel to y-axis
+        for i in (1, 5):
+            adj_corner = 1
+            # if not has_vis_marker or (corner_list[i][3] == 1 and corner_list[i + 2][3] == 1):
+            if not (corner_list[i][0] == corner_list[i][1] == corner_list[i][2] == HID_COORD) and \
+                    not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] ==
+                         corner_list[i + adj_corner][
+                             2] == HID_COORD):
+                col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
+                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                                               corner_list[i][1] * scale + CORNER_POS[1]),
+                                 (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
+                                  corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
+        for i in (0, 4):
+            adj_corner = 3
+            # if not has_vis_marker or (corner_list[i][3] == 1 and corner_list[i + 2][3] == 1):
+            if not (corner_list[i][0] == corner_list[i][1] == corner_list[i][2] == HID_COORD) and \
+                    not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] ==
+                         corner_list[i + adj_corner][
+                             2] == HID_COORD):
+                col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
+                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                                               corner_list[i][1] * scale + CORNER_POS[1]),
+                                 (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
+                                  corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
+
+        # parallel to z-axis
+        for i in (0, 1, 2, 3):
+            adj_corner = 7
+            # if not has_vis_marker or (corner_list[i][3] == 1 and corner_list[i + 1][3] == 1):
+            if not (corner_list[i][0] == corner_list[i][1] == corner_list[i][2] == HID_COORD) and \
+                    not (corner_list[adj_corner - i][0] == corner_list[adj_corner - i][1] ==
+                         corner_list[adj_corner - i][
+                             2] == HID_COORD):
+                pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
+                                                 corner_list[i][1] * scale + CORNER_POS[1]),
+                                 (corner_list[adj_corner - i][0] * scale + CORNER_POS[0],
+                                  corner_list[adj_corner - i][1] * scale + CORNER_POS[1]))
+
+        for corner in corner_list:
+            # if not has_vis_marker or corner[3] == 1:
+            if not (corner[0] == corner[1] == corner[2] == HID_COORD):
+                # col = COL_CLOSE if corner[2] > 0 else COL_FAR
+                # col = COL_CLOSE if corner in close_corners else COL_FAR
+                col = COL_CLOSE if np.any(np.all(corner == close_corners, axis=1)) else COL_FAR
+                pygame.draw.circle(screen, col, (corner[0] * scale + CORNER_POS[0],
+                                                 corner[1] * scale + CORNER_POS[1]), corner_size, 0)
+
+    def coordinate_reformer(self, cube):
+        reform_cube = np.zeros((0, 3))
+        for i in range(0, 22, 3):
+            coord = cube[i:i + 3]  # 3 consecutive values (x, y, z of one coordinate)
+            reform_cube = np.vstack((reform_cube, coord))
+
+        return reform_cube
+
+    def full_corner_reformer(self, cube):
+        reform_cube = np.zeros((0, 4))
+        for i in range(0, 30, 4):
+            coord = cube[i:i + 4]
+            reform_cube = np.vstack((reform_cube, coord))
+
+        return reform_cube
+
+    def save_images(self, cube, reconstruction, target, path, has_vis_marker, mode=None):
+        BLACK = (0, 0, 0)
+        WHITE = (255, 255, 255)
+        WIDTH = 500
+        HEIGHT = 500
+
+        cube = cube.detach().numpy()
+        reconstruction = reconstruction.detach().numpy()
+        target = target.detach().numpy()
+
+        cube = cube.squeeze()
+        reconstruction = reconstruction.squeeze()
+        target = target.squeeze()
+
+        cube =  self.coordinate_reformer(cube)
+        #cube = self.full_corner_reformer(cube) if has_vis_marker else self.coordinate_reformer(cube)
+        reconstruction = self.coordinate_reformer(reconstruction)
+        target = self.coordinate_reformer(target)
+
+        s1 = pygame.Surface((WIDTH, HEIGHT))
+        s2 = pygame.Surface((WIDTH, HEIGHT))
+        s3 = pygame.Surface((WIDTH, HEIGHT))
+        s4 = pygame.Surface((3 * WIDTH, HEIGHT))
+
+        s1.fill(WHITE)
+        s2.fill(WHITE)
+        s3.fill(WHITE)
+        s4.fill(WHITE)
+
+        self.draw_cube(cube, 100, 4, s1, has_vis_marker=True)
+        self.draw_cube(reconstruction, 100, 4, s2, has_vis_marker=False)
+        self.draw_cube(target, 100, 4, s3, has_vis_marker=False)
+
+        s4.blit(s1, (0, 0))
+        s4.blit(s2, (WIDTH, 0))
+        s4.blit(s3, (2 * WIDTH, 0))
+        pygame.draw.line(s4, BLACK, (WIDTH, 0), (WIDTH, HEIGHT))
+        pygame.draw.line(s4, BLACK, (2 * WIDTH, 0), (2 * WIDTH, HEIGHT))
+
+        if mode == "rec_only":
+            pygame.image.save(s2, path)
+        elif mode == "original_only":
+            pygame.image.save(s1, path)
+        else:
+            pygame.image.save(s4, path)
+
     ############################################################################
     ##########  INFERENCE  #####################################################
 
@@ -197,6 +345,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         observations_vis = observations.clone()
         #o1_vis = observations_vis[0]
         #o2_vis = observations_vis[1]
+        print('obsevartions:')
         print(observations)
         observations = np.delete(observations, -1, axis=2)
         #observations[0] = np.delete(observations[0], list(range(3, observations[0].shape[1], 4)), axis=1)
@@ -292,14 +441,38 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             # calculate and print ORE (optimal reconstruction error)
             if cycle == 0:
                 ideal_binding_matrix = self.ideal_binding
-                ore_x, useless_bm = self.perform_bpt_binding_only(True, idx=0, obs=o_target, bm=ideal_binding_matrix)
-                print(type(ore_x))
-                print(ore_x)
-                print(ore_x.shape)
+                #print('target')
+                #print(o_target)
+
+                ore_x, useless_bm = self.perform_bpt_binding_only(False, idx=0, obs=o_target, bm=ideal_binding_matrix)
+               # print(ore_x)
                 ore_x_vis = self.add_vis_marker(ore_x)
-                print(type(ore_x_vis))
-                print(ore_x_vis)
+                #print(ore_x_vis)
                 ore_pred = self.core_model.forward(ore_x_vis, "testing")
+                path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/test.png'
+                self.save_images(ore_x, ore_pred, o_target_flat, path, True)
+
+                # mal cube corners manuell einfügen
+                #test_corners = torch.tensor([[-0.45763,-0.6691,-0.30478,1.0,-0.00474,-0.63743,0.58623,1.0,0.81296,-0.25388,0.15697,1.0,0.36007,-0.28555,-0.73403,1.0,0.00474,0.63743,-0.58623,1.0,0.45763,0.6691,0.30478,1.0,-0.36007,0.28555,0.73403,1.0,-0.81296,0.25388,-0.15697,1.0]])
+                #test_target = torch.tensor([[-0.45763,-0.6691,-0.30478,-0.00474,-0.63743,0.58623,0.81296,-0.25388,0.15697,0.36007,-0.28555,-0.73403,0.00474,0.63743,-0.58623,0.45763,0.6691,0.30478,-0.36007,0.28555,0.73403,-0.81296,0.25388,-0.15697]])
+                #test_pred = self.core_model.forward(test_corners, "testing")
+                #self.save_images(test_target, test_pred, test_target, path, True)
+
+                # ausprobieren ob es am model liegt -> hier funktioniert reconstruction gut, muss an daten liegen
+                #test_corners = torch.tensor([[ 0.4748, -0.3835, -0.6144,  1.0000,  0.5195, -0.5902,  0.3629, 1.0000,
+                #                                0.5242,  0.3882,  0.5697,  1.0000,  0.4795,  0.5949, -0.4077, 1.0000,
+               #                                 -0.5195,  0.5902, -0.3629,  1.0000, -0.4748,  0.3835,  0.6144,  1.0000,
+                #                                -0.4795, -0.5949,  0.4077,  1.0000, -0.5242, -0.3882, -0.5697,  1.0000]])
+                #test_corners_no_vis = torch.tensor([[0.4748, -0.3835, -0.6144,  0.5195, -0.5902, 0.3629,
+                #                              0.5242, 0.3882, 0.5697,  0.4795, 0.5949, -0.4077,
+                #                              -0.5195, 0.5902, -0.3629,  -0.4748, 0.3835, 0.6144,
+                #                              -0.4795, -0.5949, 0.4077, -0.5242, -0.3882, -0.5697]])
+               # test_target = torch.tensor([[ 0.4748, -0.3835, -0.6144,  0.5195, -0.5902,  0.3629,  0.5242,  0.3882,
+                #                                0.5697,  0.4795,  0.5949, -0.4077, -0.5195,  0.5902, -0.3629, -0.4748,
+                #                                    0.3835,  0.6144, -0.4795, -0.5949,  0.4077, -0.5242, -0.3882, -0.5697]])
+               # test_pred = self.core_model.forward(test_corners, "testing")
+               # self.save_images(test_corners_no_vis, test_pred, test_target, path, True)
+
                 ore_pred_masked = torch.clone(ore_pred)
                 o_target_flat_masked = torch.clone(o_target_flat)
                 for i in range(2, ore_pred_masked.size(dim=1), 3):

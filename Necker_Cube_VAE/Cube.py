@@ -203,10 +203,11 @@ class Cube:
         self.corners = np.hstack((new_coords, self.vis))
 
 
-def main(data_filename = None, target_filename = None, generate_training_dataset=True):
+def main(data_filename = None, target_filename = None, generate_training_dataset=True, framework_input_bool=True):
     if generate_training_dataset:
         target_cubes = []
         data_cubes = []
+        framework_input = []
         center_0 = (0, 0, 0)
         def generate_cubes(n_del_corners = 0, n_cubes = 200, noise = 0, del_z = False, side_len_lower = 0.5, side_len_upper = 3, rand_cor = False, rand_cor_range = 0, noise_freq = 10, input_noise=0):
             # (Tim's BA:) noise >= 0.4 bad for model performance
@@ -235,6 +236,37 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
                 cube.rotate_y(rotations_y[i])
                 cube.rotate_z(rotations_z[i])
                 target_cubes.append(cube)
+
+                #### save one cube and its opposing observation here for use in the framework
+                if framework_input_bool and i == 0:
+                    framework_input.append(cube)
+                    cube = Cube(center_0, lengths[i], visibility)
+                    cube.rotate_x(-rotations_x[i])
+                    cube.rotate_y(-rotations_y[i])
+                    cube.rotate_z(rotations_z[i])
+                    framework_input.append(cube)
+
+                    corners_tensor = torch.tensor([])  # Create an empty tensor
+
+                    fn = 'TEST_INPUT_FRAMEWORK'
+
+                    path_input_framework = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + fn + '.pt'
+                    with open(path_input_framework, 'a') as file:
+                        for cube in framework_input:
+                            cube_tensor = torch.tensor([])
+                            for [x, y, z, vis] in cube.corners:
+                                corner = torch.tensor(
+                                    [round(x, 5), round(y, 5), round(z, 5), round(vis, 5)])  # , round(vis, 5)
+                                cube_tensor = torch.cat((cube_tensor, corner.unsqueeze(0)), dim=0)
+                            corners_tensor = torch.cat((corners_tensor, cube_tensor.unsqueeze(0)), dim=0)
+                        print(corners_tensor)
+
+                        torch.save(corners_tensor, path_input_framework)
+
+
+                ##### end framework input generation
+
+
 
                 if rand_cor: # choose a random amount of corners to delete
                     rand_del_cor = random.sample(range(rand_cor_range), 1)
@@ -265,13 +297,13 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
         data_mode = 'training' #'training'
         sl_l = 0.5
         sl_u = 3
-        n = 3000
-        n_cor = [0, 0]
+        n = 4000
+        n_cor = [0]
         g_noise = [0] * len(n_cor)
-        z_mis = [False, True]
+        z_mis = [False]
         r_cor = [False] * len(n_cor)
         corner_range = [0] * len(n_cor)  # random number of corners to delete from 0 to n-1
-        inp_noise = 0.1
+        inp_noise = 0
         noise_f = 3
 
         for i in range(len(n_cor)):
@@ -356,6 +388,8 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
         #cube_2.print_cube(scale=100)
         print('total number of cubes in the dataset: ' + str(len(data_cubes)))
         print(str(len(target_cubes)))
+
+
     else:
         ########### generate input cubes for framework
         # creates one cube based on given rotation angles and the opposite observation
@@ -380,7 +414,7 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
 
 
         # change rotation and filename here
-        generate_cubes_input_framework(71, 63, 4)
+        generate_cubes_input_framework(23.5541, 81.23, -58.302)
         filename = 'input_cubes_framework'
 
         path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename + '.txt'
@@ -403,7 +437,9 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
                 for [x, y, z, vis] in cube.corners:
                     corner = torch.tensor([round(x, 5), round(y, 5), round(z, 5), round(vis, 5)]) # , round(vis, 5)
                     cube_tensor = torch.cat((cube_tensor, corner.unsqueeze(0)), dim=0)
+                print(cube_tensor.squeeze())
                 corners_tensor = torch.cat((corners_tensor, cube_tensor.unsqueeze(0)), dim=0)
+                print(corners_tensor)
             print(corners_tensor.shape)
             print(corners_tensor)
             torch.save(corners_tensor, 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + filename + '.pt')
@@ -414,7 +450,7 @@ if __name__ == "__main__":
     #if false: generate only input cubes for the framework
     #data filenames are only for generate_training_dataset
     #for input cubs rotation angles and filename have to be set in the code
-    main(data_filename='framework_input.txt', target_filename='training_target.txt', generate_training_dataset=False)
+    main(data_filename='input_framework_data.txt', target_filename='input_framework_target.txt', generate_training_dataset=True, framework_input_bool=True)
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])

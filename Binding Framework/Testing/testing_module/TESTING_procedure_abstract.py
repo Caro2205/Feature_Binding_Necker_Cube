@@ -115,7 +115,8 @@ class TEST_PROCEDURE(ABC):
         #return paths
         if self.illusion == 'necker_cube_static':
             #input_cubes_filename = 'tensor_dataset_tim.pt'
-            input_cubes_filename = 'input_cubes_framework.pt'
+            #input_cubes_filename = 'input_cubes_framework.pt'
+            input_cubes_filename = 'TEST_INPUT_FRAMEWORK.pt'
             return ["Data_Compiler/optical_illusions/" + input_cubes_filename]
         else:
             return self.get_walker_data_paths()

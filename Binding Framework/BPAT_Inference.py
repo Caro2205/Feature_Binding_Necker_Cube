@@ -27,7 +27,6 @@ from Data_Compiler.data_preparation import Preprocessor
 from BPAT_evaluation import BPAT_evaluator
 
 from VAE_models import VAE_model
-from VAE_models import VAE_model_residuals
 #from VAE_models import VAE_model_large
 
 
