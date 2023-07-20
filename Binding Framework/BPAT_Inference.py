@@ -27,7 +27,8 @@ from Data_Compiler.data_preparation import Preprocessor
 from BPAT_evaluation import BPAT_evaluator
 
 from VAE_models import VAE_model
-#from VAE_models import VAE_model_large
+from VAE_models import VAE_model_large
+from VAE_models import VAE_model_small
 
 
 class BPAT_Inference():
@@ -291,7 +292,7 @@ class BPAT_Inference():
         self.core_model_path = model_path
 
         self.core_model = VAE_model.VariationalAutoencoder()
-        #self.core_model = VAE_model_residuals.VariationalAutoencoder()
+        #self.core_model = VAE_model_small.VariationalAutoencoder()
         #self.core_model = VAE_model_large.VariationalAutoencoder()
 
         self.core_model.load_state_dict(torch.load(model_path))

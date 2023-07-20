@@ -48,6 +48,13 @@ class BINDER_NxM():
         self.t_sign = 0
         self.ts = []
 
+        #self.temps_col =[]
+        #self.temps_row = []
+        self.prev_avg_col = []
+        self.prev_avg_row = []
+
+        self.all_filtered_losses = []
+
 
     ######## Initializations ################################################################
     #########################################################################################
@@ -311,48 +318,70 @@ class BINDER_NxM():
             self.temp_val_col = 1
 
     
-    def reset_temp(self): 
-
-        if self.temp_change=="step_up":
-            self.temp_val_row = 0
-            self.temp_val_col = 0
-
-            if self.fct_temperature_turnup == 'sigmoid':
-                self.sig_cnt_row = torch.Tensor([0]).to(self.device)
-                self.sig_cnt_col = torch.Tensor([0]).to(self.device)
-
-        elif self.temp_change=="smooth_down":
-            self.temp_val_row = 1 / 1000
-            self.temp_val_col = 1 / 1000
-
-            # self.temp_val_row = 0
-            # self.temp_val_col = 0
-
-            self.temp_down_cnt_row = 0
-            self.temp_down_cnt_col = 0
+    def reset_temp(self):
+        self.temp_val_row = 1 / 1000
+        self.temp_val_col = 1 / 1000
 
 
-    def decr_temp_row(self, i):
-        if self.temp_val_row < 3:
-            self.temp_down_cnt_row += i
-            self.temp_val_row = (self.temp_lambda_row * self.temp_down_cnt_row) / self.max_temp_val_row
-            # self.temp_val_row = (1 + self.temp_lambda_row * self.temp_down_cnt_row) / self.max_temp_val_row
-            # self.temp_val_row = self.max_temp_val_row / (1 + self.temp_lambda_row * self.temp_down_cnt_row)
-            print("temp_val_row has been decreased to:")
-            print(self.temp_val_row)
-        # else:
-        #     print(self.temp_val_row)
-        #     exit()
+
+    def get_temp_row(self):
+        return self.temp_val_row
+    def get_temp_col(self):
+        return self.temp_val_col
+
+    def filtered_loss(self, current_loss, cycle):
+        alpha = 0.99
+        if cycle == 0:
+            filtered_loss = current_loss
+        else:
+            last_filtered_loss = self.all_filtered_losses[-1]
+            filtered_loss = alpha * last_filtered_loss + (1 - alpha) * current_loss
+
+        self.all_filtered_losses.append(filtered_loss)
+
+    def get_filtered_losses(self):
+        return self.all_filtered_losses
+
+    def mov_avg_temp_adaption_col(self, losses, cycle):
+        threshold = 0.0003
+        incr_factor = 0.005
+        decr_factor = 0.08
+        max_temp = 4
+
+        if cycle < 200 and self.temp_val_row < max_temp:
+            self.temp_val_col += incr_factor
+            print('Temperature has been increased to ' + str(self.temp_val_col))
+        else:
+            last_10 = losses[-10:]
+            moving_average = np.mean(last_10)
+            self.prev_avg_col.append(moving_average)
+            test = self.prev_avg_col
+            if self.prev_avg_col.__len__() > 1 and abs(moving_average - self.prev_avg_col[-2]) < threshold and self.temp_val_col > 0.11 and losses[-1] <= 0.2:
+                self.temp_val_col -= decr_factor
+                print('Temperature has been decreased to ' + str(self.temp_val_col))
+            elif self.temp_val_col < max_temp:
+                self.temp_val_col += incr_factor
+                print('Temperature has been increased to ' + str(self.temp_val_col))
+
+    def mov_avg_temp_adaption_row(self, losses, cycle):
+        threshold = 0.0003
+        incr_factor = 0.005
+        decr_factor = 0.08
+        max_temp = 4
+
+        if cycle < 200 and self.temp_val_row < max_temp:
+            self.temp_val_row += incr_factor
+        else:
+            last_10 = losses[-10:]
+            moving_average = np.mean(last_10)
+            self.prev_avg_row.append(moving_average)
+
+            if self.prev_avg_row.__len__() > 1 and abs(moving_average - self.prev_avg_row[-2]) < threshold and self.temp_val_row > 0.11 and losses[-1] <= 0.2:
+                self.temp_val_row -= decr_factor
+            elif self.temp_val_row < max_temp:
+                self.temp_val_row += incr_factor
 
 
-    def decr_temp_col(self, i):
-        if self.temp_val_col < 4:
-            self.temp_down_cnt_col += i
-            self.temp_val_col = (self.temp_lambda_col * self.temp_down_cnt_col) / self.max_temp_val_col
-            # self.temp_val_col = (1 + self.temp_lambda_col * self.temp_down_cnt_col) / self.max_temp_val_col
-            # self.temp_val_col = self.max_temp_val_col / (1 + self.temp_lambda_col * self.temp_down_cnt_col)
-            print("Temp_val_col has been decreased to:")
-            print(self.temp_val_col)
 
     def decr_temp_col_linear(self):
         if self.temp_val_col < 3.5:   #< 5:
@@ -367,97 +396,6 @@ class BINDER_NxM():
             #0.0051 #0.02
             print("Temp_val_row has been linearly decreased to:")
             print(self.temp_val_row)
-
-
-
-    def incr_temp_row(self):
-        if self.fct_temperature_turnup == 'linear' and self.temp_val_row <= self.max_temp_val_row:
-            self.temp_val_row += self.temp_step_row
-        elif self.fct_temperature_turnup == 'sigmoid':
-            self.temp_val_row = self.max_temp_val_row * nn.functional.sigmoid((self.sig_cnt_row - self.sig_drift_row)/self.max_temp_val_row) + self.sig_offset_row
-            self.sig_cnt_row += self.temp_step_row
-            print(self.sig_cnt_row)
-        elif self.fct_temperature_turnup == 'elu':
-            elu = lambda x : self.elu_alpha_row * (torch.exp(x)-1)
-            # elu = nn.ELU(alpha=self.elu_alpha_row)
-            if self.temp_val_row < self.max_temp_val_row:
-                self.temp_val_row = elu(self.elu_cnt_row - self.elu_drift_row) + self.elu_alpha_row
-                # self.temp_val_row = elu(self.elu_cnt_row/self.max_temp_val_row - self.elu_drift_row) + self.elu_alpha_row
-            else:
-                self.temp_val_row = self.max_temp_val_row
-            self.elu_cnt_row += self.temp_step_row
-            print(self.elu_cnt_row)
-
-        print(f'\n>>>>> Increased temperature (row) to {self.temp_val_row} [{self.fct_temperature_turnup}] <<<<<')
-
-
-    def incr_temp_col(self):
-        if self.fct_temperature_turnup == 'linear' and self.temp_val_col <= self.max_temp_val_col:
-            self.temp_val_col += self.temp_step_col
-        elif self.fct_temperature_turnup == 'sigmoid':
-            self.temp_val_col = self.max_temp_val_col * nn.functional.sigmoid((self.sig_cnt_col - self.sig_drift_col)/self.max_temp_val_col) + self.sig_offset_col
-            self.sig_cnt_col += self.temp_step_col
-            print(self.sig_cnt_col)
-        elif self.fct_temperature_turnup == 'elu':
-            elu = lambda x : self.elu_alpha_col * (torch.exp(x)-1)
-            # elu = nn.ELU(alpha=self.elu_alpha_col) 
-            if self.temp_val_col < self.max_temp_val_col:
-                self.temp_val_col = elu(self.elu_cnt_col - self.elu_drift_col) + self.elu_alpha_col
-                # self.temp_val_col = elu(self.elu_cnt_col/self.max_temp_val_col - self.elu_drift_col) + self.elu_alpha_col
-            else:
-                self.temp_val_col = self.max_temp_val_col
-            self.elu_cnt_col += self.temp_step_col
-            print(self.elu_cnt_col)
-
-        print(f'\n>>>>> Increased temperature (col) to {self.temp_val_col} [{self.fct_temperature_turnup}] <<<<<')
-
-
-    def incr_temp_relative_row(self, grads):
-        self.temp_val_row += self.get_relative_temperature_step(grads)
-
-        print(f'\n>>>>> Increased temperature (row) to {self.temp_val_row} [{self.fct_realtive_temperature_turnup}] <<<<<')
-
-
-    def incr_temp_relative_col(self, grads):
-        self.temp_val_col += self.get_relative_temperature_step(grads)
-
-        print(f'\n>>>>> Increased temperature (col) to {self.temp_val_col} [{self.fct_realtive_temperature_turnup}] <<<<<')
-
-
-    def get_relative_temperature_step(self, gradients): 
-        if self.fct_realtive_temperature_turnup == 'lpfilter_deriv':
-            t_filter_alpha = 0.5
-            t_sign_alpha = 0.6
-            grads_filtered = self.low_pass_filter(gradients)
-            grads_sec_deriv = self.second_derivative(grads_filtered)
-
-            # t_new = grads_sec_deriv[-1]
-            t_new = grads_sec_deriv[-10:]
-            t_new_sum = torch.sum(t_new)
-
-            self.t_sign = torch.square(t_sign_alpha * self.t_sign + (1-t_sign_alpha) * torch.sign(t_new_sum))
-
-            self.t = self.t_sign * (t_filter_alpha * self.t + (1-t_filter_alpha) * torch.abs(t_new_sum))
-
-            print(f'New temperature increment: {self.t}')
-            
-            return self.t.item()
-
-        else:
-            if self.fct_realtive_temperature_turnup == 'sum_of_abs_diff':
-                n = gradients.size()[0] - 1
-                d_grads = gradients[:n] - gradients[-n:]
-                t = torch.sum( torch.abs(torch.sum(d_grads, dim=0)), dim=0 )
-            elif self.fct_realtive_temperature_turnup == 'mean':
-                t = torch.mean(gradients)
-
-            self.ts.append(t)
-            if t < 0.0001:
-                return self.temp_step_col
-            else:
-                print(gradients)
-                print(self.ts)
-                return 1/t
 
 
     def get_max_temp_row(self):

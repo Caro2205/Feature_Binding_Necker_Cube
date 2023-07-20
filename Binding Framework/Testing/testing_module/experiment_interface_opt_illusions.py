@@ -445,7 +445,12 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1'
                 #model_path = 'C:/Users/Tim/_Eigene_Dateien/Studium_Kogni/Kogni_Semester_7/Bachelor_Arbeit/TimGerneProjectCodeOnly/VAE_models/saved_model_parameters_VAE_2_dataset_1_0.2'
 
+                #normal
                 model_path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/VAE_models/saved_model_parameters'
+                #small
+                #model_path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/VAE_models/saved_model_parameters_small'
+                #large
+                #model_path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/VAE_models/saved_model_parameters_large'
 
 
 

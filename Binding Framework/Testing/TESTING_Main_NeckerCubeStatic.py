@@ -70,9 +70,9 @@ def main():
 
 
     # sample_nums = [600, 600, 600, 600] 
-    sample_nums = [2, 2, 2]#[200, 200, 200]   #[12, 12, 12]
+    sample_nums = [2, 2, 2] #[200, 200, 200]   #[12, 12, 12]
 
-    tested_dimensions = [3] #[6]
+    tested_dimensions = [3]
 
     testNeckerCubeStaticTimeGerneBSc.perform_experiment(
         sample_nums, 

@@ -96,6 +96,9 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
              3, 2, 1, 0]
         ).to(self.device)
 
+        self.temps_col = []
+        self.temps_row = []
+
         super().__init__()
 
 
@@ -492,9 +495,9 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     o[i][2] = prev_predicted_z
 
                     # add noise to observation
-                    if True: # changed noise adding here
-                        o[i][0] += np.random.normal(0, 1) * 0.01
-                        o[i][1] += np.random.normal(0, 1) * 0.01
+                    #if True: # changed noise adding here
+                    #    o[i][0] += np.random.normal(0, 1) * 0.01
+                    #    o[i][1] += np.random.normal(0, 1) * 0.01
 
             #########################################################################################
             print('------------- Tuning Cycle: ' + str(cycle) + ' of ' + str(
@@ -528,16 +531,19 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 o_target_flat_masked[0][i] = 0
             ############################################################################
 
-            #loss = self.at_loss(upd_prediction.float(), o_target_flat.float())      #MSE
+            loss = self.at_loss(upd_prediction.float(), o_target_flat.float())      #MSE
 
             #loss with calculated with mask on z-values
-            loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float())
+            #loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float())
 
             print(f'frame: {self.obs_count} cycle: {cycle} loss: {loss}')
             rec_losses.append(loss.item())
 
             # Propagate error back through tuning horizon
             loss.backward()
+
+            # create filtered loss
+            self.binder.filtered_loss(loss.item(), cycle)
 
             ############ UPDATE PARAMETERS
             ###############################################################################################
@@ -563,8 +569,11 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
                 # Temperature till reset_frame decrease then set back to initial temperature then decrease again
                 if cycle != reset_frame:  # reset_frame
-                    self.binder.decr_temp_col_linear()
-                    self.binder.decr_temp_row_linear()
+                    self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle)
+                    self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle)
+                    #self.binder.decr_temp_col_linear()
+                    #self.binder.decr_temp_row_linear()
+
                 elif cycle == reset_frame:
                     # reset temperature
                     self.binder.reset_temp()
@@ -574,6 +583,10 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     self.ideal_binding = self.ideal_binding.gather(
                         0, self.contra_order.unsqueeze(1).expand(self.ideal_binding.shape))  # ideal BM geändert
                     print(f'Reset ideal binding matrix to contra matrix: \n{self.ideal_binding}')
+
+                #save temp values
+                self.temps_col.append(self.binder.get_temp_col())
+                self.temps_row.append(self.binder.get_temp_row())
 
                     ########################
 
@@ -611,9 +624,29 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     self.Bs[i].data = upd_B.clone().data            #hier wird self.Bs auf neue BM gesetzt
                     self.Bs[i].requires_grad = True
 
+
+        filtered_losses = self.binder.get_filtered_losses()
         #######################################################################
         #  END of tuning cycles
         #######################################################################
+
+        filename = result_path + "/filtered_reconstruction_loss.txt"
+        with open(filename, "w") as f:
+            for loss in filtered_losses:
+                print(loss, file=f)
+        f.close()
+
+        filename = result_path + "/temperature_values_column.txt"
+        with open(filename, "w") as f:
+            for temp in self.temps_col:
+                print(temp, file=f)
+        f.close()
+
+        filename = result_path + "/temperature_values_row.txt"
+        with open(filename, "w") as f:
+            for temp in self.temps_row:
+                print(temp, file=f)
+        f.close()
 
         filename = result_path + "/reconstruction_losses.txt"
         with open(filename, "w") as f:
