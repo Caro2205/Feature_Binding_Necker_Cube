@@ -47,6 +47,8 @@ class TEST_PROCEDURE(ABC):
 
         self.ill_data_cnt = 0
 
+        self.counter = 0
+
         self.preprocessor = Preprocessor(
             self.num_observations, 
             self.num_features, 
@@ -108,18 +110,25 @@ class TEST_PROCEDURE(ABC):
         self.result_path = path+timestamp+'/'
         os.mkdir(self.result_path)
 
-    
+
     def get_data_paths(self):
-        #paths = []
-        #paths.append("Data_Compiler/optical_illusions/tensor_dataset_tim.pt")
-        #return paths
-        if self.illusion == 'necker_cube_static':
-            #input_cubes_filename = 'tensor_dataset_tim.pt'
-            #input_cubes_filename = 'input_cubes_framework.pt'
-            input_cubes_filename = 'TEST_INPUT_FRAMEWORK.pt'
-            return ["Data_Compiler/optical_illusions/" + input_cubes_filename]
-        else:
-            return self.get_walker_data_paths()
+
+        # use this code if the code is to be run multiple times
+        with open('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/counter.txt', 'r') as file:
+            i = file.read()
+
+        #input_cubes_filename = 'tensor_dataset_tim.pt'
+        #input_cubes_filename = 'input_cubes_framework.pt'
+        #input_cubes_filename = 'TEST_INPUT_FRAMEWORK.pt'
+
+        #input_cubes_filename = 'input_framework_test.pt'
+
+        input_cubes_filename = 'framework_input0' + str(i) + '.pt'
+        #input_cubes_filename = 'framework_input0' + str(i) + '_inconsistent.pt'
+        print('input filename:')
+        print(input_cubes_filename)
+
+        return ["Data_Compiler/optical_illusions/" + input_cubes_filename]
     
     def load_data_all(self, data_paths, sample_nums, modification):      
 

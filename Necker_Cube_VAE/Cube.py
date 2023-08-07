@@ -202,9 +202,22 @@ class Cube:
         self.coords = new_coords
         self.corners = np.hstack((new_coords, self.vis))
 
+def save_cube_pt(cubes, path):
+    with open(path, 'a') as file:
+        for cube in cubes:
+            cube_tensor = torch.tensor([])
+            for [x, y, z, vis] in cube.corners:
+                corner = torch.tensor(
+                    [round(x, 5), round(y, 5), round(z, 5), round(vis, 5)])
+                cube_tensor = torch.cat((cube_tensor, corner.unsqueeze(0)), dim=0)
+            corners_tensor = torch.cat((corners_tensor, cube_tensor.unsqueeze(0)), dim=0)
+        print(corners_tensor)
 
-def main(data_filename = None, target_filename = None, generate_training_dataset=True, framework_input_bool=True):
-    if generate_training_dataset:
+        torch.save(corners_tensor, path)
+
+
+def main(data_filename = None, target_filename = None, framework_input_bool=True, inconsistent = False):
+    if True:
         target_cubes = []
         data_cubes = []
         framework_input = []
@@ -238,34 +251,54 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
                 target_cubes.append(cube)
 
                 #### save one cube and its opposing observation here for use in the framework
+
                 if framework_input_bool and i == 0:
                     framework_input.append(cube)
+                    framework_input.append(cube) # save the cube a second time to act as a target cube
                     cube = Cube(center_0, lengths[i], visibility)
                     cube.rotate_x(-rotations_x[i])
                     cube.rotate_y(-rotations_y[i])
                     cube.rotate_z(rotations_z[i])
                     framework_input.append(cube)
+                    framework_input.append(cube) # save the second observation a second time to act as a target cube
 
-                    corners_tensor = torch.tensor([])  # Create an empty tensor
+                    corners_tensor = torch.tensor([])
 
-                    fn = 'TEST_INPUT_FRAMEWORK'
 
-                    path_input_framework = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/' + fn + '.pt'
+                    fn = '09'
+                    n_switch = 3  # specify how many of the 8 z-coordinates should be switched/inconsistent
+
+                    path_input_framework = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '.pt'
+                    #save_cube_pt(framework_input, path_input_framework)
                     with open(path_input_framework, 'a') as file:
                         for cube in framework_input:
                             cube_tensor = torch.tensor([])
                             for [x, y, z, vis] in cube.corners:
                                 corner = torch.tensor(
-                                    [round(x, 5), round(y, 5), round(z, 5), round(vis, 5)])  # , round(vis, 5)
+                                    [round(x, 5), round(y, 5), round(z, 5), round(vis, 5)])
                                 cube_tensor = torch.cat((cube_tensor, corner.unsqueeze(0)), dim=0)
                             corners_tensor = torch.cat((corners_tensor, cube_tensor.unsqueeze(0)), dim=0)
                         print(corners_tensor)
 
                         torch.save(corners_tensor, path_input_framework)
 
+                    framework_input[0].print_cube(scale=300)
+
+                    ### generate matching inconsistent input
+
+                    framework_input_inconsistent = corners_tensor.clone()
+                    z_indices = [0, 1, 2, 3, 4, 5, 6, 7]
+                    random_z = np.random.choice(z_indices, size=n_switch, replace=False)
+                    framework_input_inconsistent[0, random_z, 2] = framework_input_inconsistent[3, random_z, 2]
+                    print(random_z)
+                    print(framework_input_inconsistent)
+
+                    path_input_framework_inconsistent = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '_inconsistent.pt'
+                    torch.save(framework_input_inconsistent, path_input_framework_inconsistent)
+
+
 
                 ##### end framework input generation
-
 
 
                 if rand_cor: # choose a random amount of corners to delete
@@ -295,8 +328,8 @@ def main(data_filename = None, target_filename = None, generate_training_dataset
         ###### select what cubes to add to the dataset #################################################################
 
         data_mode = 'training' #'training'
-        sl_l = 0.5
-        sl_u = 3
+        sl_l = 1
+        sl_u = 1
         n = 4000
         n_cor = [0]
         g_noise = [0] * len(n_cor)
@@ -450,7 +483,7 @@ if __name__ == "__main__":
     #if false: generate only input cubes for the framework
     #data filenames are only for generate_training_dataset
     #for input cubs rotation angles and filename have to be set in the code
-    main(data_filename='input_framework_data.txt', target_filename='input_framework_target.txt', generate_training_dataset=True, framework_input_bool=True)
+    main(data_filename='input_framework_data.txt', target_filename='input_framework_target.txt', framework_input_bool=True)
 
 
     # cube_1 = Cube((0, 0, 0), 1, [1, 1, 1, 1, 1, 1, 1, 1])

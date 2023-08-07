@@ -21,6 +21,7 @@ class TESTING_NeckerCubeStatic_TimGerneBSc(EXPERIMENT_INTERFACE_OPT_ILLUSIONS):
 
     def __init__(self, num_features, num_observations, num_dimensions, illusion, edge_points):
         experiment_name = f"binding_test_results_{illusion}"
+        self.i = 0
         super().__init__(num_features, num_observations, num_dimensions, experiment_name, illusion, edge_points)
 
 
@@ -41,7 +42,8 @@ class TESTING_NeckerCubeStatic_TimGerneBSc(EXPERIMENT_INTERFACE_OPT_ILLUSIONS):
             distractors, 
             temperature)
 
-def main(): 
+def main():
+    i = 0
     # set the following parameters
     num_observations = 8    # The number of feature observations that are provided
     num_input_features = 8  # The number of input features expected / processed by the model (should be <= num_observations)
@@ -70,7 +72,7 @@ def main():
 
 
     # sample_nums = [600, 600, 600, 600] 
-    sample_nums = [2, 2, 2] #[200, 200, 200]   #[12, 12, 12]
+    sample_nums = [4, 4, 4] #[200, 200, 200]   #[12, 12, 12]
 
     tested_dimensions = [3]
 
@@ -84,4 +86,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    for i in range(10):
+        with open('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/counter.txt', 'w') as file:
+            file.write(str(i))
+        main()

@@ -99,6 +99,8 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         self.temps_col = []
         self.temps_row = []
 
+        self.use_z_in_loss_calc = False
+
         super().__init__()
 
 
@@ -360,7 +362,9 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         ############ Setting Cube Observations ########################################################
         ###############################################################################################
         o1 = observations[0]   # NC Variante 1
-        o2 = observations[1]  # NC Variante 2
+        o1_target = observations[1] # target for NC Variante 1
+        o2 = observations[2]  # NC Variante 2
+        o2_target = observations[3]# target for NC Variante 2
 
         print(observations)
         print(o1)
@@ -431,15 +435,26 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
             ### wechsel des input cubes:
             if cycle < reset_frame:
-                o = o1_without_z
-                #o = o1
-                o_target = o1
+                o = o1_without_z # leave out z coordinates
+                #o = o1 # pass all coordinates along
+
+                # überbleibsel code wo target einfach input cube war
+                #o_target = o1
+                #o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+
+                print('target here')
+                print(o1_target)
+                o_target = o1_target
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+
             elif cycle >= reset_frame:
                 o = o2_without_z
                 #o = o2
-                o_target = o1
+                o_target = o1_target
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+                #o_target = o1
+                #o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+
 
             # calculate and print ORE (optimal reconstruction error)
             if cycle == 0:
@@ -455,27 +470,6 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/test.png'
                 self.save_images(ore_x, ore_pred, o_target_flat, path, True)
 
-                # mal cube corners manuell einfügen
-                #test_corners = torch.tensor([[-0.45763,-0.6691,-0.30478,1.0,-0.00474,-0.63743,0.58623,1.0,0.81296,-0.25388,0.15697,1.0,0.36007,-0.28555,-0.73403,1.0,0.00474,0.63743,-0.58623,1.0,0.45763,0.6691,0.30478,1.0,-0.36007,0.28555,0.73403,1.0,-0.81296,0.25388,-0.15697,1.0]])
-                #test_target = torch.tensor([[-0.45763,-0.6691,-0.30478,-0.00474,-0.63743,0.58623,0.81296,-0.25388,0.15697,0.36007,-0.28555,-0.73403,0.00474,0.63743,-0.58623,0.45763,0.6691,0.30478,-0.36007,0.28555,0.73403,-0.81296,0.25388,-0.15697]])
-                #test_pred = self.core_model.forward(test_corners, "testing")
-                #self.save_images(test_target, test_pred, test_target, path, True)
-
-                # ausprobieren ob es am model liegt -> hier funktioniert reconstruction gut, muss an daten liegen
-                #test_corners = torch.tensor([[ 0.4748, -0.3835, -0.6144,  1.0000,  0.5195, -0.5902,  0.3629, 1.0000,
-                #                                0.5242,  0.3882,  0.5697,  1.0000,  0.4795,  0.5949, -0.4077, 1.0000,
-               #                                 -0.5195,  0.5902, -0.3629,  1.0000, -0.4748,  0.3835,  0.6144,  1.0000,
-                #                                -0.4795, -0.5949,  0.4077,  1.0000, -0.5242, -0.3882, -0.5697,  1.0000]])
-                #test_corners_no_vis = torch.tensor([[0.4748, -0.3835, -0.6144,  0.5195, -0.5902, 0.3629,
-                #                              0.5242, 0.3882, 0.5697,  0.4795, 0.5949, -0.4077,
-                #                              -0.5195, 0.5902, -0.3629,  -0.4748, 0.3835, 0.6144,
-                #                              -0.4795, -0.5949, 0.4077, -0.5242, -0.3882, -0.5697]])
-               # test_target = torch.tensor([[ 0.4748, -0.3835, -0.6144,  0.5195, -0.5902,  0.3629,  0.5242,  0.3882,
-                #                                0.5697,  0.4795,  0.5949, -0.4077, -0.5195,  0.5902, -0.3629, -0.4748,
-                #                                    0.3835,  0.6144, -0.4795, -0.5949,  0.4077, -0.5242, -0.3882, -0.5697]])
-               # test_pred = self.core_model.forward(test_corners, "testing")
-               # self.save_images(test_corners_no_vis, test_pred, test_target, path, True)
-
                 ore_pred_masked = torch.clone(ore_pred)
                 o_target_flat_masked = torch.clone(o_target_flat)
                 for i in range(2, ore_pred_masked.size(dim=1), 3):
@@ -483,9 +477,18 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     o_target_flat_masked[0][i] = 0
 
                 ORE = self.at_loss(ore_pred.float(), o_target_flat.float())
+                ORE = ORE.item()
                 print('Optimal Reconstruction Error: ' + str(ORE))
                 ORE_masked = self.at_loss(ore_pred_masked.float(), o_target_flat_masked.float())
                 print('Optimal Reconstruction Error without z: ' + str(ORE_masked))
+
+
+            noise_strength = 0.01
+
+            # add noise to target
+            #for i in range(o_target.shape[0]):
+            #    for j in range(o_target.shape[1]):
+            #        o_target[i, j] += torch.randn(1).item() * noise_strength
 
 
             ######## set z-coordiantes of observation to predicted z-coordintates of last cycle ########
@@ -531,10 +534,11 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 o_target_flat_masked[0][i] = 0
             ############################################################################
 
-            loss = self.at_loss(upd_prediction.float(), o_target_flat.float())      #MSE
+            if self.use_z_in_loss_calc:
+                loss = self.at_loss(upd_prediction.float(), o_target_flat.float())
+            else:
+                loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float())      #MSE
 
-            #loss with calculated with mask on z-values
-            #loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float())
 
             print(f'frame: {self.obs_count} cycle: {cycle} loss: {loss}')
             rec_losses.append(loss.item())
@@ -569,13 +573,16 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
                 # Temperature till reset_frame decrease then set back to initial temperature then decrease again
                 if cycle != reset_frame:  # reset_frame
-                    self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle)
-                    self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle)
-                    #self.binder.decr_temp_col_linear()
-                    #self.binder.decr_temp_row_linear()
+                    #self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle)
+                    #self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle)
+                    self.binder.decr_temp_col_linear()
+                    self.binder.decr_temp_row_linear()
+                    #self.binder.set_temp_constant()
+
 
                 elif cycle == reset_frame:
                     # reset temperature
+                    #self.binder.set_temp_constant()
                     self.binder.reset_temp()
                     print("Temperature has been reset")
 
@@ -629,6 +636,13 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         #######################################################################
         #  END of tuning cycles
         #######################################################################
+        print('ORE and type')
+        print(ORE)
+        print(type(ORE))
+        filename = result_path + "/ORE_value.txt"
+        with open(filename, "w") as f:
+            print(ORE, file=f)
+        f.close()
 
         filename = result_path + "/filtered_reconstruction_loss.txt"
         with open(filename, "w") as f:

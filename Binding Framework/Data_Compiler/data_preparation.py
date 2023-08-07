@@ -278,6 +278,8 @@ class Preprocessor():
         Get inference data for optical illusions. 
     """
     def get_AT_data_oi_gestalten(self, path, frame_samples):
+        print(path)
+        print(frame_samples)
         visual_input = torch.load(path)[:frame_samples] 
         selected_joint_names = [*range(self.num_features)] 
 
