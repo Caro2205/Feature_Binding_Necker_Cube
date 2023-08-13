@@ -203,12 +203,16 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                                  (corner_list[adj_corner - i][0] * scale + CORNER_POS[0],
                                   corner_list[adj_corner - i][1] * scale + CORNER_POS[1]))
 
+        i = 0
         for corner in corner_list:
+            colors = ["red", "green", "blue", "yellow", "orange", "purple", "cyan", "pink"]
             # if not has_vis_marker or corner[3] == 1:
             if not (corner[0] == corner[1] == corner[2] == HID_COORD):
                 # col = COL_CLOSE if corner[2] > 0 else COL_FAR
                 # col = COL_CLOSE if corner in close_corners else COL_FAR
-                col = COL_CLOSE if np.any(np.all(corner == close_corners, axis=1)) else COL_FAR
+                col = colors[i]
+                i+=1
+                #col = COL_CLOSE if np.any(np.all(corner == close_corners, axis=1)) else COL_FAR # dieser code wird sonst benutzt
                 pygame.draw.circle(screen, col, (corner[0] * scale + CORNER_POS[0],
                                                  corner[1] * scale + CORNER_POS[1]), corner_size, 0)
 
@@ -220,15 +224,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
         return reform_cube
 
-    def full_corner_reformer(self, cube):
-        reform_cube = np.zeros((0, 4))
-        for i in range(0, 30, 4):
-            coord = cube[i:i + 4]
-            reform_cube = np.vstack((reform_cube, coord))
-
-        return reform_cube
-
-    def save_images(self, cube, reconstruction, target, path, has_vis_marker, mode=None):
+    def save_images(self, cube, reconstruction, target, path, mode=None):
         BLACK = (0, 0, 0)
         WHITE = (255, 255, 255)
         WIDTH = 500
@@ -242,8 +238,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         reconstruction = reconstruction.squeeze()
         target = target.squeeze()
 
-        cube =  self.coordinate_reformer(cube)
-        #cube = self.full_corner_reformer(cube) if has_vis_marker else self.coordinate_reformer(cube)
+        cube =  self.coordinate_reformer(cube) # übergebe nur cube OHNE visibility marker
         reconstruction = self.coordinate_reformer(reconstruction)
         target = self.coordinate_reformer(target)
 
@@ -442,8 +437,6 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 #o_target = o1
                 #o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
 
-                print('target here')
-                print(o1_target)
                 o_target = o1_target
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
 
@@ -467,8 +460,8 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 ore_x_vis = self.add_vis_marker(ore_x)
                 #print(ore_x_vis)
                 ore_pred = self.core_model.forward(ore_x_vis, "testing")
-                path = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/test.png'
-                self.save_images(ore_x, ore_pred, o_target_flat, path, True)
+                path = result_path + 'ORE_reconstruction.png'
+                self.save_images(ore_x, ore_pred, o_target_flat, path)
 
                 ore_pred_masked = torch.clone(ore_pred)
                 o_target_flat_masked = torch.clone(o_target_flat)
@@ -480,10 +473,11 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 ORE = ORE.item()
                 print('Optimal Reconstruction Error: ' + str(ORE))
                 ORE_masked = self.at_loss(ore_pred_masked.float(), o_target_flat_masked.float())
+                ORE_masked = ORE_masked.item()
                 print('Optimal Reconstruction Error without z: ' + str(ORE_masked))
 
 
-            noise_strength = 0.01
+            noise_strength = 0.0001
 
             # add noise to target
             #for i in range(o_target.shape[0]):
@@ -524,6 +518,23 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 #            print(self.preprocessor.convert_data_VAE_to_AT(upd_prediction))
 
 
+            ################# save images of input, reconstructed and target cube for every 100th cycle
+            image_folder_path = result_path + '/images'
+            if cycle == 0:
+                os.mkdir(image_folder_path)
+
+            if cycle % 100 == 0:
+                image_path = image_folder_path + '/cycle' + str(cycle) + '.png'
+                self.save_images(x, upd_prediction, o1_target, image_path)
+
+            ############## attractor: added value to loss that bushes binding matrix to the diagonal it is closer to
+            eucl_dist = torch.sum((self.ideal_binding - self.Bs[0]) ** 2)
+            #print(self.ideal_binding)
+            #print('drüber ideal binding')
+            #print(self.Bs[0])
+            #print('drüber aktuelle binding matrix')
+
+
            ################ Calculate error  ############################################
            ############### create masked predictions and targets for loss ###############
             upd_prediction_masked = torch.clone(upd_prediction)
@@ -534,10 +545,12 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 o_target_flat_masked[0][i] = 0
             ############################################################################
 
+            lambda_constraint = 0.005
+
             if self.use_z_in_loss_calc:
-                loss = self.at_loss(upd_prediction.float(), o_target_flat.float())
+                loss = self.at_loss(upd_prediction.float(), o_target_flat.float()) + eucl_dist * lambda_constraint
             else:
-                loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float())      #MSE
+                loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float()) + eucl_dist * lambda_constraint  #MSE calculated without z coordinate
 
 
             print(f'frame: {self.obs_count} cycle: {cycle} loss: {loss}')
@@ -573,11 +586,13 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
                 # Temperature till reset_frame decrease then set back to initial temperature then decrease again
                 if cycle != reset_frame:  # reset_frame
-                    #self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle)
-                    #self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle)
-                    self.binder.decr_temp_col_linear()
-                    self.binder.decr_temp_row_linear()
-                    #self.binder.set_temp_constant()
+                    #self.binder.filtered_mov_avg_temp_adaption(cycle=cycle) # temp depends on filtered loss
+                    #self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle) # temp depends on loss
+                    #self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle) # temp depends on loss
+                    self.binder.decr_temp_col_linear() # linear increase
+                    self.binder.decr_temp_row_linear() # linear increase
+                    #
+                    #self.binder.set_temp_constant() # constant temperature
 
 
                 elif cycle == reset_frame:
@@ -637,11 +652,11 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         #  END of tuning cycles
         #######################################################################
         print('ORE and type')
-        print(ORE)
-        print(type(ORE))
+        print(ORE_masked)
+        print(type(ORE_masked))
         filename = result_path + "/ORE_value.txt"
         with open(filename, "w") as f:
-            print(ORE, file=f)
+            print(ORE_masked, file=f)
         f.close()
 
         filename = result_path + "/filtered_reconstruction_loss.txt"

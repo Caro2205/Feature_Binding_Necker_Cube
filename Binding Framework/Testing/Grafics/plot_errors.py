@@ -4,11 +4,11 @@ import os
 
 def main():
 
-    datetime = '2023_Jul_19-20_22_46'
+    datetime = '2023_Aug_10-15_07_38'
     #datetime = 'test'
     #datetime = 'erster run'
-    ore = 0.00107966
-    ore_without_z = 0.00092452
+    ore = 0.0008661210886202753
+    ore_without_z = 0.0008006133139133453
     dir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/Testing/Grafics/'
     folder_path = dir + 'binding_test_results_necker_cube_static/' + datetime + '/b_dimensions_3/necker_cube_static_0/'
 

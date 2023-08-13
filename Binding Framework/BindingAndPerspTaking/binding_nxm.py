@@ -342,10 +342,36 @@ class BINDER_NxM():
     def get_filtered_losses(self):
         return self.all_filtered_losses
 
-    def mov_avg_temp_adaption_col(self, losses, cycle):
-        threshold = 0.0003
+    def filtered_mov_avg_temp_adaption(self, cycle):
+        threshold = 0.001
         incr_factor = 0.005
         decr_factor = 0.04
+        max_temp = 4
+
+        losses = self.all_filtered_losses
+
+        if cycle < 200 and self.temp_val_row < max_temp:
+            self.temp_val_col += incr_factor
+            self.temp_val_row += incr_factor
+            print('Temperature has been increased to ' + str(self.temp_val_col))
+        else:
+            last_10 = losses[-10:]
+            moving_average = np.mean(last_10)
+            self.prev_avg_col.append(moving_average)
+            if self.prev_avg_col.__len__() > 1 and abs(moving_average - self.prev_avg_col[-2]) < threshold and self.temp_val_col > 0.11 and losses[-1] <= 0.2: # moving_average
+                self.temp_val_col -= decr_factor
+                self.temp_val_row -= decr_factor
+                print('Temperature has been decreased to ' + str(self.temp_val_col))
+            elif self.temp_val_col < max_temp:
+                self.temp_val_col += incr_factor
+                self.temp_val_row += incr_factor
+                print('Temperature has been increased to ' + str(self.temp_val_col))
+
+
+    def mov_avg_temp_adaption_col(self, losses, cycle):
+        threshold = 0.0001
+        incr_factor = 0.02
+        decr_factor = 0.06
         max_temp = 4
 
         if cycle < 200 and self.temp_val_row < max_temp:
@@ -356,7 +382,7 @@ class BINDER_NxM():
             moving_average = np.mean(last_10)
             self.prev_avg_col.append(moving_average)
             test = self.prev_avg_col
-            if self.prev_avg_col.__len__() > 1 and abs(moving_average - self.prev_avg_col[-2]) < threshold and self.temp_val_col > 0.11 and losses[-1] <= 0.2:
+            if self.prev_avg_col.__len__() > 1 and abs(losses[-1] - self.prev_avg_col[-2]) < threshold and self.temp_val_col > 0.11 and losses[-1] <= 0.2: # moving_average
                 self.temp_val_col -= decr_factor
                 print('Temperature has been decreased to ' + str(self.temp_val_col))
             elif self.temp_val_col < max_temp:
@@ -364,9 +390,9 @@ class BINDER_NxM():
                 print('Temperature has been increased to ' + str(self.temp_val_col))
 
     def mov_avg_temp_adaption_row(self, losses, cycle):
-        threshold = 0.0003
-        incr_factor = 0.002
-        decr_factor = 0.04
+        threshold = 0.0001
+        incr_factor = 0.02
+        decr_factor = 0.06
         max_temp = 4
 
         if cycle < 200 and self.temp_val_row < max_temp:
@@ -376,7 +402,7 @@ class BINDER_NxM():
             moving_average = np.mean(last_10)
             self.prev_avg_row.append(moving_average)
 
-            if self.prev_avg_row.__len__() > 1 and abs(moving_average - self.prev_avg_row[-2]) < threshold and self.temp_val_row > 0.11 and losses[-1] <= 0.2:
+            if self.prev_avg_row.__len__() > 1 and abs(losses[-1] - self.prev_avg_row[-2]) < threshold and self.temp_val_row > 0.11 and losses[-1] <= 0.2: # moving_average
                 self.temp_val_row -= decr_factor
             elif self.temp_val_row < max_temp:
                 self.temp_val_row += incr_factor
@@ -384,22 +410,22 @@ class BINDER_NxM():
 
 
     def decr_temp_col_linear(self):
-        if self.temp_val_col < 4:   #< 5:
-            self.temp_val_col += 0.01 #0.0051 #0.02
+        if self.temp_val_col < 3.7:   #< 5:
+            self.temp_val_col += 0.02 #0.0051 #0.02
             print("Temp_val_col has been linearly decreased to:")
             print(self.temp_val_col)
 
     def decr_temp_row_linear(self):
-        if self.temp_val_row < 4:#< 5:
-            self.temp_val_row += 0.01
+        if self.temp_val_row < 3.7:#< 5:
+            self.temp_val_row += 0.02
 
             #0.0051 #0.02
             print("Temp_val_row has been linearly decreased to:")
             print(self.temp_val_row)
 
     def set_temp_constant(self):
-        self.temp_val_col = 2
-        self.temp_val_row = 2
+        self.temp_val_col = 4.5
+        self.temp_val_row = 4.5
 
 
     def get_max_temp_row(self):

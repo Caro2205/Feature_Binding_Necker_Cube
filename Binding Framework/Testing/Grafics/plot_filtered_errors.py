@@ -8,7 +8,8 @@ def main():
 
     fig, ax = plt.subplots()
 
-    folder_name = 'mult_test_reccurent'
+    #C:\Users\49157\OneDrive\Dokumente\UNI\8. Semester\Bachelorarbeit\Python Projects\Code\Binding Framework\Testing\Grafics\binding_test_results_necker_cube_static\test_with_turn_up_inconsistent
+    folder_name = 'with attractor lambda 0.005'
 
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 

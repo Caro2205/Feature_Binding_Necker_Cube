@@ -266,7 +266,7 @@ def main(data_filename = None, target_filename = None, framework_input_bool=True
 
 
                     fn = '09'
-                    n_switch = 3  # specify how many of the 8 z-coordinates should be switched/inconsistent
+                    n_switch = 8  # specify how many of the 8 z-coordinates should be switched/inconsistent
 
                     path_input_framework = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '.pt'
                     #save_cube_pt(framework_input, path_input_framework)
@@ -293,7 +293,7 @@ def main(data_filename = None, target_filename = None, framework_input_bool=True
                     print(random_z)
                     print(framework_input_inconsistent)
 
-                    path_input_framework_inconsistent = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '_inconsistent.pt'
+                    path_input_framework_inconsistent = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '_incon.pt'
                     torch.save(framework_input_inconsistent, path_input_framework_inconsistent)
 
 
