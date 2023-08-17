@@ -2,6 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+
+########################################################################################################################
+# plot loss and logarithmic loss against cycle as well as the temperature
+########################################################################################################################
+
+
 def main():
 
     datetime = '2023_Aug_10-15_07_38'

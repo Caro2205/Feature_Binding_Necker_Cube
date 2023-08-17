@@ -403,6 +403,9 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         feature_names = ['LefDowFar', 'RigDowFar', 'RigUpFar', 'LefUpFar', 'LefUpClo', 'RigUpClo', 'RigDowClo',
                          'LefDowClo']
 
+        #ideal_binding_copy = self.ideal_binding.clone()
+        #ideal_binding_copy.requires_grad_()
+        #self.Bs[0] = ideal_binding_copy
         ########################### Printing and Saving Initial binding Matrix ########################
         print("Initial Binding Matrix:")
         print(self.Bs[0])
@@ -413,6 +416,13 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             'Binding matrix showing relative contribution of observed feature to input feature')
 
         initial_matrix.savefig(result_path + "initial_binding_matrix_neuron_act.png")
+
+        ### experiment: set initial binding matrix to ideal binding matrix
+        #print('Ideale bm')
+        #ideal_binding_copy = self.ideal_binding.clone()
+        #ideal_binding_copy.requires_grad_()
+        #print(ideal_binding_copy)
+        #self.Bs[0] = ideal_binding_copy
 
 
         #o1_flat =  self.preprocessor.convert_data_AT_to_VAE(o1)
@@ -430,8 +440,8 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
             ### wechsel des input cubes:
             if cycle < reset_frame:
-                o = o1_without_z # leave out z coordinates
-                #o = o1 # pass all coordinates along
+                #o = o1_without_z # leave out z coordinates
+                o = o1 # pass all coordinates along
 
                 # überbleibsel code wo target einfach input cube war
                 #o_target = o1
@@ -441,12 +451,15 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
 
             elif cycle >= reset_frame:
-                o = o2_without_z
-                #o = o2
+                #o = o2_without_z
+                o = o2
                 o_target = o1_target
                 o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
                 #o_target = o1
                 #o_target_flat = self.preprocessor.convert_data_AT_to_VAE(o_target)
+
+            print(o)
+            print('observation hier drüber')
 
 
             # calculate and print ORE (optimal reconstruction error)
@@ -455,7 +468,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 #print('target')
                 #print(o_target)
 
-                ore_x, useless_bm = self.perform_bpt_binding_only(False, idx=0, obs=o_target, bm=ideal_binding_matrix)
+                ore_x, useless_bm = self.perform_bpt_binding_only(False, idx=0, obs=o_target, bm=ideal_binding_matrix) # o_target als obs eigentlich
                # print(ore_x)
                 ore_x_vis = self.add_vis_marker(ore_x)
                 #print(ore_x_vis)
@@ -527,7 +540,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 image_path = image_folder_path + '/cycle' + str(cycle) + '.png'
                 self.save_images(x, upd_prediction, o1_target, image_path)
 
-            ############## attractor: added value to loss that bushes binding matrix to the diagonal it is closer to
+            ############## attractor: added value to loss that pushes binding matrix to the diagonal it is closer to
             eucl_dist = torch.sum((self.ideal_binding - self.Bs[0]) ** 2)
             #print(self.ideal_binding)
             #print('drüber ideal binding')

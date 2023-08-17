@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+########################################################################################################################
+# plot filtered error of multiple inputs/runs
+########################################################################################################################
+
 def main():
 
     all_ORE = []
@@ -9,7 +13,7 @@ def main():
     fig, ax = plt.subplots()
 
     #C:\Users\49157\OneDrive\Dokumente\UNI\8. Semester\Bachelorarbeit\Python Projects\Code\Binding Framework\Testing\Grafics\binding_test_results_necker_cube_static\test_with_turn_up_inconsistent
-    folder_name = 'with attractor lambda 0.005'
+    folder_name = 'ohne z übergabe'
 
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
@@ -34,7 +38,7 @@ def main():
     plt.legend(loc='upper right')
 
     path = dir + 'binding_test_results_necker_cube_static/' + folder_name + '/'
-    plt.savefig(path + 'filtered_losses_log.png')
+    plt.savefig(path + 'filtered_losses_log_only_con.png')
     plt.close()
 
 
