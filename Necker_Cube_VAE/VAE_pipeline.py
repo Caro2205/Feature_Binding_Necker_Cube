@@ -639,23 +639,23 @@ def main():
                     datapath, n_traindata, epoch_losses, reconstruction_losses, n_testdata, test_losses,
                     xy_test_losses, z_test_losses, xy_validation_losses, z_validation_losses, validation_losses)
 
-    #filename = folderdir + "/epoch_losses.txt"
-    #with open(filename, "w") as f:
-    #    for i, loss in enumerate(epoch_losses):
-    #        print(i + 1, loss, file=f)
-    #f.close()
+    filename = folderdir + "/epoch_losses.txt"
+    with open(filename, "w") as f:
+        for i, loss in enumerate(epoch_losses):
+            print(i + 1, loss, file=f)
+    f.close()
 
-    #filename = folderdir + "/reconstruction_losses.txt"
-    #with open(filename, "w") as f:
-    #    for i, loss in enumerate(reconstruction_losses):
-    #        print(i + 1, loss, file=f)
-    #f.close()
+    filename = folderdir + "/reconstruction_losses.txt"
+    with open(filename, "w") as f:
+        for i, loss in enumerate(reconstruction_losses):
+            print(i + 1, loss, file=f)
+    f.close()
 
-    #filename = folderdir + "/validation_losses.txt"
-    #with open(filename, "w") as f:
-    #    for epoch, loss in enumerate(validation_losses):
-    #        print(epoch+1, loss, file=f)
-    #f.close()
+    filename = folderdir + "/validation_losses.txt"
+    with open(filename, "w") as f:
+        for epoch, loss in enumerate(validation_losses):
+            print(epoch+1, loss, file=f)
+    f.close()
 
     # save seed and test MSE to ensure responsibility
     # seed and test MSE are added to existing file in main directory
@@ -665,14 +665,14 @@ def main():
 
 
 if __name__ == "__main__":
-    seed = 0
-    seeding(seed)
-    main()
+    #seed = 0
+    #seeding(seed)
+    #main()
 
-    #for i in range(10):
-    #    seed = i
-    #    seeding(seed)
-    #    main()
+    for i in range(10):
+        seed = i
+        seeding(seed)
+        main()
 
     # seed = 1
     # seeding(seed)

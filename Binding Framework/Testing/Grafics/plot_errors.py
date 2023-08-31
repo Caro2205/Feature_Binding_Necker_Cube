@@ -11,12 +11,17 @@ import os
 def main():
 
     datetime = '2023_Aug_10-15_07_38'
+    folder_name_in_mult_runs = 'dep on filtered loss 6'
+    run = '03'
     #datetime = 'test'
     #datetime = 'erster run'
-    ore = 0.0008661210886202753
-    ore_without_z = 0.0008006133139133453
+    #ore = 0.0008661210886202753
+    #ore_without_z = 0.0008006133139133453
     dir = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/Testing/Grafics/'
-    folder_path = dir + 'binding_test_results_necker_cube_static/' + datetime + '/b_dimensions_3/necker_cube_static_0/'
+    #folder_path = dir + 'binding_test_results_necker_cube_static/' + datetime + '/b_dimensions_3/necker_cube_static_0/'
+    folder_path = dir + 'binding_test_results_necker_cube_static/' + folder_name_in_mult_runs + '/' + run + '/b_dimensions_3/necker_cube_static_0/'
+
+    ore = np.loadtxt(folder_path + 'ORE_value.txt')
 
     reconstruction_losses = np.loadtxt(folder_path + 'reconstruction_losses.txt')
     rec = reconstruction_losses[:, 1]
@@ -71,7 +76,8 @@ def main():
     all_labels = labels1 + labels2
 
     plt.legend(all_handles, all_labels)
-    plt.savefig(folder_path + 'filtered_reconstruction_losses_log.png')
+    plt.savefig(folder_path + 'filtered_losses_log.png')
+    #plt.savefig('C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Python Projects/Code/Binding Framework/Testing/Grafics/binding_test_results_necker_cube_static/dep on filtered loss 3/01/b_dimensions_3/necker_cube_static_0/testplot.png')
     plt.close()
 
 
@@ -80,7 +86,7 @@ def main():
 
     ax1.plot(rec, color='r', label='reconstruction error')
     ax1.axhline(ore, color='blue', label='ORE') # optimal reconstruction error
-    ax1.axhline(ore_without_z, color='green', label='ORE without z') # ore calculated without the z values
+    #ax1.axhline(ore_without_z, color='green', label='ORE without z') # ore calculated without the z values
     ax1.set_xlabel('Tuning Cycle')
     ax1.set_ylabel('Reconstruction Loss')
 
@@ -105,7 +111,7 @@ def main():
     ax1.plot(rec, color='r', label='reconstruction error')
     ax1.set_yscale('log')
     ax1.axhline(ore, color='blue', label='ORE') # optimal reconstruction error
-    ax1.axhline(ore_without_z, color='green', label='ORE without z') # ore calculated without the z values
+    #ax1.axhline(ore_without_z, color='green', label='ORE without z') # ore calculated without the z values
     ax1.set_xlabel('Tuning Cycle')
     ax1.set_ylabel('Reconstruction Loss')
 

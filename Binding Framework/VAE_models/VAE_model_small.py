@@ -6,20 +6,15 @@ class VariationalAutoencoder(nn.Module):
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(input_size, 15),  # input layer
-            nn.Tanh(),
-            nn.Linear(15, 6),
-            nn.Tanh()
+            nn.Linear(input_size, 2),  # input layer
         )
 
         self.residual = nn.Sequential(
-            nn.Linear(input_size, 6)
+            nn.Linear(input_size, 2)
         )
 
         self.decoder = nn.Sequential(
-            nn.Linear(6, 15),
-            nn.Tanh(),
-            nn.Linear(15, 8 * 3),  # output layer
+            nn.Linear(2, 8 * 3),  # output layer
         )
 
     def forward(self, x, mode="training"):

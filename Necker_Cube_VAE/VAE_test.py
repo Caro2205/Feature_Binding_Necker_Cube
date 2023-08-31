@@ -96,29 +96,35 @@ def main():
 
     fig, ax = plt.subplots()
 
-    bar_width = 0.3  # Width of each bar
+    bar_width = 0.75  # Width of each bar
     x = np.arange(16)  # x-axis positions
     offset = bar_width / 2  # Offset for aligning bars
-    labels = ['Test {}'.format(i + 1) for i in range(16)]  # Entry labels
+    #labels = ['Test {}'.format(i + 1) for i in range(16)]  # Entry labels
+    labels = ['0', '1', '2', '3', '4', '5', '6', '7', '0', '1', '2', '3', '4', '5', '6', '7']
     colors = ['steelblue', 'darkorange', 'limegreen']
 
-    for i in range(16):
-        entry_data = losses[:, i]
-        bar_positions = x[i] + np.array([-bar_width, 0, bar_width])
-        ax.bar(bar_positions, entry_data, width=bar_width, color=colors)
+    #for i in range(16):
+    #    entry_data = losses[:, i]
+    #    bar_positions = x[i] + np.array([-bar_width, 0, bar_width])
+    #    ax.bar(bar_positions, entry_data, width=bar_width, color=colors)
+
+    entry_data = all_test_losses
+    ax.bar(x, entry_data, width=bar_width, color='#008365')
 
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=90)
+    #ax.set_xticklabels(labels, rotation=90)
+    ax.set_xticklabels(labels)
     ax.set_ylabel('average RMSE')
-    #ax.set_title('Bar Chart of Three Vectors')
-    legend_labels = ['all coords', 'z coords', 'xy coords']
-    legend_handles = [plt.Rectangle((0, 0), 1, 1, color=color) for color in colors]
-    ax.legend(legend_handles, legend_labels)
+    ax.set_xlabel('number of corners missing')
+    ax.set_title('medium model')
+    #legend_labels = ['all coords', 'z coords', 'xy coords']
+    #legend_handles = [plt.Rectangle((0, 0), 1, 1, color=color) for color in colors]
+    #ax.legend(legend_handles, legend_labels)
 
     # add dashed lines for better visualization
-    dashed_lines_heights = [0.01, 0.02, 0.03, 0.04]
+    dashed_lines_heights = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
     for height in dashed_lines_heights:
-        ax.axhline(height, linestyle='dashed', color='gray', linewidth = 0.5)
+        ax.axhline(height, linestyle='dashed', color='gray', linewidth = 0.5, alpha = 0.5)
 
     plt.savefig(os.path.join(folderdir, 'comparison.png'), dpi=300, bbox_inches='tight')
     #plt.show()

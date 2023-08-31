@@ -123,8 +123,8 @@ class TEST_PROCEDURE(ABC):
 
         #input_cubes_filename = 'framework_input00.pt'
 
-        #input_cubes_filename = 'framework_input0' + str(i) + '.pt'
-        input_cubes_filename = 'framework_input0' + str(i) + '_incon.pt'
+        input_cubes_filename = 'framework_input0' + str(i) + '.pt'
+        #input_cubes_filename = 'framework_input0' + str(i) + '_incon.pt'
         print('input filename:')
         print(input_cubes_filename)
 
