@@ -249,20 +249,20 @@ class BPAT_evaluator():
 
         bm = binding_matrix.detach().cpu().numpy()
         fig, ax = plt.subplots(figsize=(4.9, 4.9))  #method adjusted for evaluation images
-        # plt.subplots_adjust(bottom=0.25)
-        # plt.subplots_adjust(left=0.2)
-        # plt.subplots_adjust(right=1.01)
+        #plt.subplots_adjust(bottom=0.25)
+        #plt.subplots_adjust(left=0.2)
+        #plt.subplots_adjust(right=1.01)
 ##############################################################
-        # cax = sns.heatmap(
+        #cax = sns.heatmap(
         #     bm,
         #     ax=ax,
         #     cmap=palette,
-        #     vmin=0.0, vmax=1.0,
+       #      vmin=0.0, vmax=1.0,
         #     cbar=True
         #     )
-        # cbar = cax.collections[0].colorbar
-        # cbar.ax.tick_params(color='black')
-        # cbar.ax.tick_params(labelcolor='black')
+        #cbar = cax.collections[0].colorbar
+        #cbar.ax.tick_params(color='black')
+        #cbar.ax.tick_params(labelcolor='black')
 
         cax = sns.heatmap(
             bm,
@@ -275,34 +275,78 @@ class BPAT_evaluator():
             )
 #########################################################
 
-        # cax = ax.matshow(bm)            # draws matrix
-        # cb = fig.colorbar(cax, ax=ax, shrink=0.71)   # draws colorbar
+        #cax = ax.matshow(bm)            # draws matrix
+        #cb = fig.colorbar(cax, ax=ax, shrink=0.71)   # draws colorbar
 
         ## Adds numbers to plot
-        # for (i, j), z in np.ndenumerate(bm): 
+        #for (i, j), z in np.ndenumerate(bm):
             # ndenumerate function for generating multidimensional index iterator.
             # NOTE i is y-coordinate (row) and j is x-coordinate (column)
-            # ax.text(j, i, '{:0.2f}'.format(z), ha='center', va='center', fontsize=5)
+       #     ax.text(j, i, '{:0.2f}'.format(z), ha='center', va='center', fontsize=5)
             # adds a text into the plot where i and j are the coordinates
             # and z is the assigned number 
 
         ## adding titles
-        # ax.set_xticks(observ_nums)
-        # ax.set_xticklabels([feature_names[i] for i in observ_order], size=10, color='black')
+        #ax.set_xticks(observ_nums)
+        #ax.set_xticklabels([feature_names[i] for i in observ_order], size=10, color='black')
         # # ax.set_xticklabels(feature_names)
-        # plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-        # ax.set_xlabel('observed feature', size = 15, color='black')
-        # ax.xaxis.set_label_position('bottom')
-        # ax.set_yticks(observ_nums)
-        # ax.set_yticklabels(feature_names, size=10, color='black')
-        # plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-        # ax.set_ylabel('input feature', size = 15, color='black')
+        #plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+        #ax.set_xlabel('observed feature', size = 15, color='black')
+        #ax.xaxis.set_label_position('bottom')
+        #ax.set_yticks(observ_nums)
+        #ax.set_yticklabels(feature_names, size=10, color='black')
+        #plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+        #ax.set_ylabel('input feature', size = 15, color='black')
 
 
         #plt.title(title, size = 20, fontweight='bold', color='white')
-        # plt.show()
+        #plt.show()
 
         return fig
+
+    def plot_multiple_binding_matrices(input_matrices=None):
+        cycles = np.arange(0, 3001, 100)
+        print('here all binding matrices')
+        print(input_matrices)
+
+        selected_indices = [0, 1, 2, 5, 9, 10, 11, 12, 15, 30]
+
+        matrix_rc = {
+            'axes.facecolor': 'white',
+            'figure.facecolor': 'white',
+            'text.color': 'black'
+        }
+
+        sns.set(rc=matrix_rc)
+        palette = "viridis"
+        sns.set_palette(palette)
+
+        num_selected = len(selected_indices)
+        fig, axes = plt.subplots(2, 5, figsize=(15, 7))
+
+        for i, index in enumerate(selected_indices):
+            row, col = divmod(i, 5)
+            bm = input_matrices[index]  # Get the matrix at the specified index
+
+            cax = sns.heatmap(
+                bm,
+                ax=axes[row, col],
+                cmap=palette,
+                vmin=0.0, vmax=1.0,
+                cbar=False,
+                xticklabels=False,
+                yticklabels=False
+            )
+
+            axes[row, col].set_title(f"Matrix {index}")
+
+        # Hide empty subplots if necessary
+        for i in range(num_selected, 10):
+            row, col = divmod(i, 5)
+            fig.delaxes(axes[row, col])
+
+        plt.tight_layout()
+        plt.show()
 
     
     def plot_binding_matrix_nxm(self, 

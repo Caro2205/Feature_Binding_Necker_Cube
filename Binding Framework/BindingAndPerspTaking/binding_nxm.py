@@ -344,7 +344,7 @@ class BINDER_NxM():
 
     def filtered_mov_avg_temp_adaption(self, cycle):
         threshold = 0.0001
-        incr_factor = 0.005
+        incr_factor = 0.02
         decr_factor = 0.008
         max_temp = 3.5
 
@@ -371,7 +371,7 @@ class BINDER_NxM():
     def mov_avg_temp_adaption_col(self, losses, cycle):
         threshold = 0.0001
         incr_factor = 0.02
-        decr_factor = 0.06
+        decr_factor = 0.02
         max_temp = 4
 
         if cycle < 200 and self.temp_val_row < max_temp:
@@ -392,8 +392,8 @@ class BINDER_NxM():
     def mov_avg_temp_adaption_row(self, losses, cycle):
         threshold = 0.0001
         incr_factor = 0.02
-        decr_factor = 0.06
-        max_temp = 4
+        decr_factor = 0.02
+        max_temp = 5
 
         if cycle < 200 and self.temp_val_row < max_temp:
             self.temp_val_row += incr_factor
@@ -410,22 +410,22 @@ class BINDER_NxM():
 
 
     def decr_temp_col_linear(self):
-        if self.temp_val_col < 4:   #< 5:
-            self.temp_val_col += 0.005 #0.0051 #0.02
+        if self.temp_val_col < 5:   #< 5:
+            self.temp_val_col += 0.007 #0.0051 #0.02
             print("Temp_val_col has been linearly decreased to:")
             print(self.temp_val_col)
 
     def decr_temp_row_linear(self):
-        if self.temp_val_row < 4:#< 5:
-            self.temp_val_row += 0.005
+        if self.temp_val_row < 5:#< 5:
+            self.temp_val_row += 0.007
 
             #0.0051 #0.02
             print("Temp_val_row has been linearly decreased to:")
             print(self.temp_val_row)
 
     def set_temp_constant(self):
-        self.temp_val_col = 2
-        self.temp_val_row = 2
+        self.temp_val_col = 3
+        self.temp_val_row = 3
 
 
     def get_max_temp_row(self):

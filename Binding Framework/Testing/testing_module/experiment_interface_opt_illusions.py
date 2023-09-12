@@ -113,7 +113,7 @@ class EXPERIMENT_INTERFACE_OPT_ILLUSIONS(TESTER):
         scaler = 'rcwSM'        # either: 'unscaled', 'sigmoid' or 'rcwSM'
 
         # prescaling of Softmax:
-        pres = 'clamp'     # either: None, 'clamp', or 'tanh_fixed'
+        pres = 'clamp' #'clamp'     # either: None, 'clamp', or 'tanh_fixed'
         # sigma = 10
 
         ## dim3

@@ -96,11 +96,14 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
              3, 2, 1, 0]
         ).to(self.device)
 
+        self.all_bm = []
+
         self.temps_col = []
         self.temps_row = []
 
+        # tim hat bei berechnung keine z koordinaten beinhaltet
         self.use_z_in_loss_calc = False # nicht mehr relevant da loss jz anders berechnet wird
-        self.give_z_info_at_beginning = True
+        self.give_z_info_at_beginning = False
 
         super().__init__()
 
@@ -160,7 +163,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                          corner_list[i + adj_corner][
                              2] == HID_COORD):
                 col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                                corner_list[i][1] * scale + CORNER_POS[1]),
                                  (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                                   corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -174,7 +177,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                          corner_list[i + adj_corner][
                              2] == HID_COORD):
                 col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                                corner_list[i][1] * scale + CORNER_POS[1]),
                                  (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                                   corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -186,7 +189,7 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                          corner_list[i + adj_corner][
                              2] == HID_COORD):
                 col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-                pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+                pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                                corner_list[i][1] * scale + CORNER_POS[1]),
                                  (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                                   corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -407,6 +410,24 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
         #ideal_binding_copy = self.ideal_binding.clone()
         #ideal_binding_copy.requires_grad_()
         #self.Bs[0] = ideal_binding_copy
+
+        # uniform binding matrix with entries 1/8 = 0.125
+        U = torch.tensor([[0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000,0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000],
+                        [0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000, 0.12500000]], requires_grad=True)
+
+        #U = torch.zeros((8, 8), requires_grad=True)
+        # set binding matrix to only contain zeros
+        self.Bs[0] = U
+
+
+        #0.125 * torch.ones((8, 8), requires_grad=True)
+
         ########################### Printing and Saving Initial binding Matrix ########################
         print("Initial Binding Matrix:")
         print(self.Bs[0])
@@ -417,6 +438,8 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             'Binding matrix showing relative contribution of observed feature to input feature')
 
         initial_matrix.savefig(result_path + "initial_binding_matrix_neuron_act.png")
+
+        lambda_binding = 0
 
         ### experiment: set initial binding matrix to ideal binding matrix
         #print('Ideale bm')
@@ -511,11 +534,35 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
             print('------------- Tuning Cycle: ' + str(cycle) + ' of ' + str(
                 self.tuning_cycles) + '---------------------------------')
 
+            # experiment: set binding matrix each time so that it directly converges to the ideal one to see what happens to loss
+
+            #I = self.ideal_binding
+            #I.requires_grad_(True)
+
+            #if cycle == 1000: lambda_binding = 0
+            #elif lambda_binding < 1: lambda_binding += 1/100
+            ##self.Bs[0] = (1 - lambda_binding) * U_copy + lambda_binding * I_copy
+            ##self.Bs[0] = U.clone().detach().requires_grad_(True)
+            ##self.Bs[0].data.mul_(1 - lambda_binding)
+            #self.Bs[0] = I.data.mul(lambda_binding) # die zeile dann wieder weg
+            ##self.Bs[0].data.add_(I.data.mul(lambda_binding))
+            #self.Bs[0].requires_grad_(True)
+            #print(self.Bs[0])
+
+            #end experiment, just delete the code or comment out if not in use
+
+
             #########################################################################################
-            x, bm = self.perform_bpt_binding_only(do_binding, idx=0, obs=o)
+            x, bm = self.perform_bpt_binding_only(do_binding, idx=0, obs=o) # binding happens here
 
             x_vis = self.add_vis_marker(x)
             #########################################################################################
+
+            if cycle != 0:
+                previous_upd_prediction = upd_prediction
+                previous_upd_prediction_masked = previous_upd_prediction.clone()
+                for i in range(2, previous_upd_prediction_masked.size(dim=1), 3):
+                    previous_upd_prediction_masked[0][i] = 0
             upd_prediction = self.core_model.forward(x_vis, "testing")
             #upd_prediction = upd_prediction.squeeze()
 
@@ -560,20 +607,26 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
             lambda_constraint = 0.01
 
-            #if self.use_z_in_loss_calc:
-            #    loss = self.at_loss(upd_prediction.float(), o_target_flat.float()) + eucl_dist * lambda_constraint
-            #else:
-            #    loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float()) + eucl_dist * lambda_constraint  #MSE calculated without z coordinate
+            if self.use_z_in_loss_calc:
+                loss = self.at_loss(upd_prediction.float(), o_target_flat.float()) #+ eucl_dist * lambda_constraint
+            else:
+                loss = self.at_loss(upd_prediction_masked.float(), o_target_flat_masked.float()) #+ eucl_dist * lambda_constraint  #MSE calculated without z coordinate
 
             # loss berechnet auf x+y NACH Binding als target und der reconstruction als vergleich
-            loss = self.at_loss(upd_prediction_masked.float(), x_masked.float()) #+ eucl_dist * lambda_constraint
+            #loss = self.at_loss(upd_prediction_masked.float(), x_masked.float()) #+ eucl_dist * lambda_constraint
+
+
+            #if cycle == 0:
+            #    loss = self.at_loss(upd_prediction_masked.float(), x_masked.float())# + eucl_dist * lambda_constraint
+            #else:
+            #    loss = self.at_loss(previous_upd_prediction_masked.float(), x_masked.float()) #+ eucl_dist * lambda_constraint
 
 
             print(f'frame: {self.obs_count} cycle: {cycle} loss: {loss}')
             rec_losses.append(loss.item())
 
             # Propagate error back through tuning horizon
-            loss.backward()
+            loss.backward(retain_graph=True)
 
             # create filtered loss
             self.binder.filtered_loss(loss.item(), cycle)
@@ -596,15 +649,15 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                     grad_B,
                     self.at_learning_rate_binding,  # anpassen wie sie BM beeinflusst
                     self.bm_momentum,
-                    True,
+                    True, # False
                     self.b_signdamp
                 )
 
                 # Temperature till reset_frame decrease then set back to initial temperature then decrease again
                 if cycle != reset_frame:  # reset_frame
-                    self.binder.filtered_mov_avg_temp_adaption(cycle=cycle) # temp depends on filtered loss
-                    #self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle) # temp depends on loss
-                    #self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle) # temp depends on loss
+                    #self.binder.filtered_mov_avg_temp_adaption(cycle=cycle) # temp depends on filtered loss
+                    self.binder.mov_avg_temp_adaption_col(losses=self.at_losses, cycle=cycle) # temp depends on loss
+                    self.binder.mov_avg_temp_adaption_row(losses=self.at_losses, cycle=cycle) # temp depends on loss
                     #self.binder.decr_temp_col_linear() # linear increase
                     #self.binder.decr_temp_row_linear() # linear increase
                     #
@@ -635,7 +688,9 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
                 matrix = self.binder.scale_binding_matrix(self.Bs[0], self.scale_mode)
                 #####################################################################
                 ## plotting binding matrix after each %100 cycle
-                if cycle % 100 == 0:
+                if cycle % 100 == 0 or cycle % 2999 == 0:
+                    self.all_bm.append(matrix)
+
                     name = "Binding_Matrix_frame_" + str(self.obs_count) + "_cycle_" + str(cycle) + ".png"
 
                     #matrix = self.binder.scale_binding_matrix(self.Bs[0], self.scale_mode)
@@ -664,9 +719,26 @@ class Control_BPAT_NeckerCubeStatic(BPAT_Inference):
 
 
         filtered_losses = self.binder.get_filtered_losses()
+
+
         #######################################################################
         #  END of tuning cycles
         #######################################################################
+
+        bm_directory = result_path + '/binding_matrices'
+        os.mkdir(bm_directory)
+        for i, tensor in enumerate(self.all_bm):
+            # Convert the tensor to a NumPy array
+            numpy_array = tensor.numpy()
+
+            # Define a unique filename for each tensor
+            filename = bm_directory + f"/bm_{i}.csv"
+
+            # Save the NumPy array to a text file (CSV format)
+            np.savetxt(filename, numpy_array, delimiter=',', fmt='%f')
+
+        #self.evaluator.plot_multiple_binding_matrices(self.all_bm)
+
         print('ORE and type')
         print(ORE_masked)
         print(type(ORE_masked))

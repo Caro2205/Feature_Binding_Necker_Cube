@@ -265,7 +265,7 @@ def main(data_filename = None, target_filename = None, framework_input_bool=True
                     corners_tensor = torch.tensor([])
 
 
-                    fn = '09'
+                    fn = '05'
                     n_switch = 8  # specify how many of the 8 z-coordinates should be switched/inconsistent
 
                     path_input_framework = 'C:/Users/49157/OneDrive/Dokumente/UNI/8. Semester/Bachelorarbeit/Data/framework_input' + fn + '.pt'

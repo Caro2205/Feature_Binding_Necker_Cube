@@ -198,7 +198,7 @@ def draw_cube(corner_list, scale, corner_size, screen, has_vis_marker):
                 not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] == corner_list[i + adj_corner][
                     2] == HID_COORD):
             col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-            pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+            pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                            corner_list[i][1] * scale + CORNER_POS[1]),
                              (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                               corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -211,7 +211,7 @@ def draw_cube(corner_list, scale, corner_size, screen, has_vis_marker):
                 not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] == corner_list[i + adj_corner][
                     2] == HID_COORD):
             col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-            pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+            pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                            corner_list[i][1] * scale + CORNER_POS[1]),
                              (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                               corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -222,7 +222,7 @@ def draw_cube(corner_list, scale, corner_size, screen, has_vis_marker):
                 not (corner_list[i + adj_corner][0] == corner_list[i + adj_corner][1] == corner_list[i + adj_corner][
                     2] == HID_COORD):
             col = COL_CLOSE if np.any(np.all(corner_list[i] == close_corners, axis=1)) else COL_FAR
-            pygame.draw.line(screen, col, (corner_list[i][0] * scale + CORNER_POS[0],
+            pygame.draw.line(screen, BLACK, (corner_list[i][0] * scale + CORNER_POS[0],
                                            corner_list[i][1] * scale + CORNER_POS[1]),
                              (corner_list[i + adj_corner][0] * scale + CORNER_POS[0],
                               corner_list[i + adj_corner][1] * scale + CORNER_POS[1]))
@@ -247,6 +247,8 @@ def draw_cube(corner_list, scale, corner_size, screen, has_vis_marker):
             col = COL_CLOSE if np.any(np.all(corner == close_corners, axis=1)) else COL_FAR
             pygame.draw.circle(screen, col, (corner[0] * scale + CORNER_POS[0],
                                              corner[1] * scale + CORNER_POS[1]), corner_size, 0)
+
+    pygame.draw.rect(screen, BLACK, (0, 0, screen.get_width(), screen.get_height()), 4)
 
 
 # displays a cube from the dataset or a reconstructed cube. Reconstruction parameter has to be set (False by default)
@@ -291,9 +293,9 @@ def save_images(cube, reconstruction, target, path, has_vis_marker, mode=None):
     s3.fill(WHITE)
     s4.fill(WHITE)
 
-    draw_cube(cube, 100, 4, s1, has_vis_marker=True)
-    draw_cube(reconstruction, 100, 4, s2, has_vis_marker=False)
-    draw_cube(target, 100, 4, s3, has_vis_marker=False)
+    draw_cube(cube, 170, 4, s1, has_vis_marker=True)
+    draw_cube(reconstruction, 170, 4, s2, has_vis_marker=False)
+    draw_cube(target, 170, 4, s3, has_vis_marker=False)
 
     s4.blit(s1, (0, 0))
     s4.blit(s2, (WIDTH, 0))

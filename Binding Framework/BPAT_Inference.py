@@ -517,6 +517,8 @@ class BPAT_Inference():
         return x_BRC, bm, rotmat
 
     def get_grad_binding(self, grad_calc_bind):
+        #return self.Bs[0].grad
+
         # Calculate gradients with respect to the entires 
         for i in range(self.tuning_length + 1):
             self.B_grads[i] = self.Bs[i].grad   # warum 2 gradienten
